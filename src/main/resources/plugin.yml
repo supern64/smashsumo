@@ -1,0 +1,10 @@
+name: SmashSumo
+main: me.cirnoslab.smashsumo.SmashSumo
+version: 1.0.0
+author: marukyuu
+commands:
+  smashsumo:
+    description: Main command
+    usage: /<command> [arena|join|leave|start]
+    permission: smashsumo.use
+    aliases: ss
