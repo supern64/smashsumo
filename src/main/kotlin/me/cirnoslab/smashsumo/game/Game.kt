@@ -79,8 +79,6 @@ class Game(
                 gp.respawnPoint = null
             }
 
-
-
             if (getActivePlayers().size == 1) {
                 endGame()
             }
