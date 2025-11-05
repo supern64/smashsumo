@@ -32,6 +32,9 @@ class GamePlayer(
     val displayHealth: Double
         get() = Utils.ntrc(damage, 0.0, 125.0, 20.0, 1.0)
 
+    val lifeString: String
+        get() = "${color}${"⬤".repeat(lives)}${GRAY}${"⬤".repeat(SmashSumo.MAX_LIVES - lives)}"
+
     // HUDs are here so they can be modified per player
     val actionBarDisplay: String
         get() {
@@ -74,8 +77,7 @@ class GamePlayer(
                         if (gp.state != PlayerState.IN_GAME) {
                             board.add("  ${gp.color}P${gp.playerNumber} ${RED}ELIMINATED")
                         } else {
-                            val lifeString = "${gp.color}${"⬤".repeat(gp.lives)}${GRAY}${"⬤".repeat(SmashSumo.MAX_LIVES - gp.lives)}"
-                            board.add("  ${gp.color}P${gp.playerNumber} ${gp.damageColor}${"%.1f".format(gp.damage)}% $lifeString")
+                            board.add("  ${gp.color}P${gp.playerNumber} ${gp.damageColor}${"%.1f".format(gp.damage)}% ${gp.lifeString}")
                         }
                     }
                     board.add(SCOREBOARD_LINE)

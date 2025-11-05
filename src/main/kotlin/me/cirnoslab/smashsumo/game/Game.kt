@@ -19,6 +19,7 @@ import org.bukkit.entity.Player
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.scheduler.BukkitRunnable
+import org.bukkit.scoreboard.DisplaySlot
 import org.bukkit.scoreboard.Scoreboard
 import java.util.UUID
 
@@ -117,13 +118,19 @@ class Game(
         state = GameState.COUNTDOWN
 
         val spawnPoints = arena.getSpawnLocations(gamePlayers.size)
+        val health = scoreboard.registerNewObjective("%", "dummy")
+        health.displaySlot = DisplaySlot.BELOW_NAME
+
         gamePlayers.values.forEachIndexed { i, gp ->
             gp.state = GamePlayer.PlayerState.IN_GAME
             gp.player.teleport(spawnPoints[i])
             gp.playerNumber = i + 1
 
+            health.getScore(gp.player.name).score = 0
+
             val gpTeam = scoreboard.registerNewTeam("P${gp.playerNumber}")
             gpTeam.prefix = "${gp.color}[P${gp.playerNumber}] "
+            gpTeam.suffix = " " + gp.lifeString
             gpTeam.addEntry(gp.player.name)
             gp.player.scoreboard = scoreboard
         }
@@ -163,8 +170,10 @@ class Game(
         gp.player.health = 20.0
 
         gp.player.setAbsorptionHearts(gp.lives * 2.0f)
+        scoreboard.getObjective("%").getScore(gp.player.name).score = 0
 
         if (gp.lives == 0) {
+            scoreboard.getTeam("P${gp.playerNumber}").suffix = " ${GRAY}[DEAD]"
             gp.state = GamePlayer.PlayerState.SPECTATING
             if (getActivePlayers().size == 1) {
                 // game end routine
@@ -175,6 +184,8 @@ class Game(
             }
         } else {
             gp.player.gameMode = GameMode.SPECTATOR
+            scoreboard.getTeam("P${gp.playerNumber}").suffix = " " + gp.lifeString
+
             val respawnLocation = arena.getRespawnPoint(getRespawningPlayers().size)
             gp.respawnPoint = respawnLocation
             gp.waitRespawn = true
@@ -199,7 +210,7 @@ class Game(
             val rl = gp.respawnPoint ?: return // should never return unless player leaves midgame
             gp.player.playSound(gp.player.location, Sound.NOTE_PIANO, 1.0f, 1.9f)
             gp.player.gameMode = GameMode.ADVENTURE
-            gp.player.teleport(Location(rl.world, rl.blockX + 0.5, rl.blockY + 1.0, rl.blockZ + 0.5, 0f, -90f))
+            gp.player.teleport(Location(rl.world, rl.blockX + 0.5, rl.blockY + 1.0, rl.blockZ + 0.5, 0f, 90f))
             gp.waitRespawn = false
         }
     }

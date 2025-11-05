@@ -18,6 +18,7 @@ import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.event.player.PlayerToggleFlightEvent
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.util.Vector
+import kotlin.math.roundToInt
 import kotlin.math.sign
 import kotlin.random.Random
 
@@ -50,6 +51,7 @@ class PlayerMechanicListener : Listener {
             return
         }
 
+        if (aGP.game.arena.name != dGP.game.arena.name) return
         if (aGP.state != GamePlayer.PlayerState.IN_GAME || dGP.state != GamePlayer.PlayerState.IN_GAME) {
             e.isCancelled = true
             return
@@ -78,6 +80,7 @@ class PlayerMechanicListener : Listener {
         d.velocity = dKnockback
 
         ActionBar(dGP.actionBarDisplay).send(d)
+        dGP.game.scoreboard.getObjective("%").getScore(d.name).score = dGP.damage.roundToInt()
     }
 
     // make players not affected by world
