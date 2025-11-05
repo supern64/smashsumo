@@ -84,7 +84,7 @@ class GamePlayer(
         }
 
     val color
-        get() = if (playerNumber != null) SmashSumo.playerColor[(playerNumber - 1) % 8] else GRAY
+        get() = if (playerNumber != null) SmashSumo.playerColor[(playerNumber!! - 1) % 8] else GRAY
 
     val damageColor
         get() = when (damage) {

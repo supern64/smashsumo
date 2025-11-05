@@ -79,14 +79,17 @@ class Game(
                 gp.respawnPoint = null
             }
 
+
+
             if (getActivePlayers().size == 1) {
                 endGame()
             }
         }
 
-        gp.board.delete()
-        scoreboard.getTeam("P${gp.playerNumber}").unregister()
+        scoreboard.getTeam("P${gp.playerNumber}")?.unregister()
         p.scoreboard = Bukkit.getScoreboardManager().mainScoreboard
+
+        gp.board.delete()
 
         gamePlayers.remove(p.uniqueId)
         p.gameMode = GameMode.SURVIVAL

@@ -9,6 +9,7 @@ import org.bukkit.entity.Entity
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerMoveEvent
+import org.bukkit.event.player.PlayerQuitEvent
 
 class GameListener : Listener {
     @EventHandler
@@ -25,6 +26,11 @@ class GameListener : Listener {
             }
             else -> return
         }
+    }
+
+    @EventHandler
+    fun onPlayerQuit(e: PlayerQuitEvent) {
+        GameManager.leave(e.player)
     }
 
     @EventHandler

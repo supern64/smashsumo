@@ -19,12 +19,14 @@ import kotlin.math.sign
 import kotlin.random.Random
 
 class PlayerMechanicListener : Listener {
+    // check player speed
     @EventHandler(priority = EventPriority.MONITOR)
     fun onPlayerMove(e: PlayerMoveEvent) {
         val gp = GameManager.getGamePlayer(e.player) ?: return
         gp.speedSquared = e.to.distanceSquared(e.from)
     }
 
+    // apply knockback
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onPlayerHit(e: EntityDamageByEntityEvent) {
         if (e.entity !is Player || e.damager !is Player) return
@@ -69,6 +71,7 @@ class PlayerMechanicListener : Listener {
         ActionBar(dGP.actionBarDisplay).send(d)
     }
 
+    // make players not affected by world
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onPlayerHeal(e: EntityRegainHealthEvent) {
         if (e.entity !is Player) return
