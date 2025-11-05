@@ -1,8 +1,10 @@
 package me.cirnoslab.smashsumo.listeners
 
 import io.github.theluca98.textapi.ActionBar
+import me.cirnoslab.smashsumo.game.Game
 import me.cirnoslab.smashsumo.game.GameManager
 import me.cirnoslab.smashsumo.game.GamePlayer
+import org.bukkit.GameMode
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -13,6 +15,7 @@ import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.EntityRegainHealthEvent
 import org.bukkit.event.entity.FoodLevelChangeEvent
 import org.bukkit.event.player.PlayerMoveEvent
+import org.bukkit.event.player.PlayerToggleFlightEvent
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.util.Vector
 import kotlin.math.sign
@@ -24,6 +27,12 @@ class PlayerMechanicListener : Listener {
     fun onPlayerMove(e: PlayerMoveEvent) {
         val gp = GameManager.getGamePlayer(e.player) ?: return
         gp.speedSquared = e.to.distanceSquared(e.from)
+
+        // bonus double jump reset
+        if ((e.player as Entity).isOnGround) {
+            gp.hasDoubleJump = true
+            gp.player.allowFlight = true
+        }
     }
 
     // apply knockback
@@ -98,5 +107,21 @@ class PlayerMechanicListener : Listener {
         if (!GameManager.isPlayerInGame(player)) return
 
         e.isCancelled = true
+    }
+
+    // double jumping
+    @EventHandler
+    fun onPlayerFly(e: PlayerToggleFlightEvent) {
+        val gp = GameManager.getGamePlayer(e.player) ?: return
+        if (gp.state == GamePlayer.PlayerState.SPECTATING || gp.game.state == Game.GameState.COUNTDOWN) return
+        if (gp.player.gameMode == GameMode.CREATIVE || gp.player.gameMode == GameMode.SPECTATOR) return
+        if (!gp.hasDoubleJump) return
+
+        e.isCancelled = true
+        e.player.allowFlight = false
+        e.player.isFlying = false
+
+        e.player.velocity = e.player.location.direction.multiply(1.1).setY(1.5)
+        gp.hasDoubleJump = false
     }
 }

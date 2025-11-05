@@ -24,6 +24,7 @@ class GamePlayer(
     var board = FastBoard(player)
     var respawnPoint: Location? = null
     var waitRespawn = false
+    var hasDoubleJump = true
 
     val speed: Double
         get() = sqrt(speedSquared)

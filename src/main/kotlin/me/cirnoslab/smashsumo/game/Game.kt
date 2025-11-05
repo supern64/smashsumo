@@ -58,6 +58,10 @@ class Game(
         p.foodLevel = 20
         p.setAbsorptionHearts(6f)
 
+        // double jump setup
+        p.allowFlight = true
+        p.isFlying = false
+
         p.addPotionEffect(PotionEffect(PotionEffectType.JUMP, Int.MAX_VALUE,1))
         p.teleport(Location(arena.center.world, arena.center.x, arena.center.y + 2.0, arena.center.z))
 
@@ -93,6 +97,9 @@ class Game(
         p.gameMode = GameMode.SURVIVAL
         p.setAbsorptionHearts(0f)
         p.removePotionEffect(PotionEffectType.JUMP)
+
+        p.allowFlight = false
+        p.isFlying = false
 
         val lobby = SmashSumo.config.getString("lobby")
         if (lobby == null) {
@@ -192,7 +199,7 @@ class Game(
             val rl = gp.respawnPoint ?: return // should never return unless player leaves midgame
             gp.player.playSound(gp.player.location, Sound.NOTE_PIANO, 1.0f, 1.9f)
             gp.player.gameMode = GameMode.ADVENTURE
-            gp.player.teleport(Location(rl.world, rl.blockX + 0.5, rl.blockY + 1.0, rl.blockZ + 0.5))
+            gp.player.teleport(Location(rl.world, rl.blockX + 0.5, rl.blockY + 1.0, rl.blockZ + 0.5, 0f, -90f))
             gp.waitRespawn = false
         }
     }
@@ -251,6 +258,8 @@ class Game(
                     gp.player.teleport(Utils.s2l(lobby))
                 }
                 gp.board.delete()
+                gp.player.allowFlight = false
+                gp.player.isFlying = false
                 gp.player.scoreboard = Bukkit.getScoreboardManager().mainScoreboard
             }
             game.gamePlayers.clear()
