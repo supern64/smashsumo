@@ -16,6 +16,7 @@ repositories {
 }
 
 dependencies {
+    compileOnly("org.jetbrains.kotlin:kotlin-stdlib:2.2.20")
     compileOnly(":spigot-1.8.8") // 1.8 full API
     implementation(":TextAPI") // bintray shut down 草
     implementation("dev.dejvokep:boosted-yaml:1.3.7")

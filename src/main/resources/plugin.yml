@@ -2,6 +2,7 @@ name: SmashSumo
 main: me.cirnoslab.smashsumo.SmashSumo
 version: 1.0.0
 author: marukyuu
+softdepend: [ktlibs-kotlin-stdlib, KotKit, KtLoader]
 commands:
   smashsumo:
     description: Main command
