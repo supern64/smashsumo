@@ -3,6 +3,7 @@ package me.cirnoslab.smashsumo.commands
 import me.cirnoslab.smashsumo.SmashSumo.Companion.P
 import me.cirnoslab.smashsumo.SmashSumo.Companion.S
 import me.cirnoslab.smashsumo.arena.ArenaManager
+import me.cirnoslab.smashsumo.game.Game
 import me.cirnoslab.smashsumo.game.GameManager
 import org.bukkit.command.CommandSender
 
@@ -62,6 +63,10 @@ object GameCommands {
                 val game = GameManager.getGame(s)
                 if (game == null) {
                     s.sendMessage("${P}You are not in a game.")
+                    return true
+                }
+                if (game.state != Game.GameState.WAITING) {
+                    s.sendMessage("${P}The game has already started.")
                     return true
                 }
                 if (game.gamePlayers.size < 2 && (args.size < 2 || args[1].lowercase() != "force")) {
