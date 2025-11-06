@@ -1,13 +1,15 @@
 package me.cirnoslab.smashsumo.game
 
 import me.cirnoslab.smashsumo.arena.Arena
-
 import org.bukkit.entity.Player
 
 object GameManager {
     var games = mutableListOf<Game>()
 
-    fun join(p: Player, arena: Arena) : GameJoinResult {
+    fun join(
+        p: Player,
+        arena: Arena,
+    ): GameJoinResult {
         if (isPlayerInGame(p)) return GameJoinResult.ALREADY_IN_GAME
 
         val game = getGame(arena) ?: initGame(arena)
@@ -15,7 +17,7 @@ object GameManager {
         return game.join(p)
     }
 
-    fun leave(p: Player) : GameLeaveResult {
+    fun leave(p: Player): GameLeaveResult {
         if (!isPlayerInGame(p)) return GameLeaveResult.NOT_IN_GAME
         val game = getGame(p)!!
         val result = game.leave(p)
@@ -52,9 +54,7 @@ object GameManager {
         return null
     }
 
-    fun isPlayerInGame(player: Player): Boolean {
-        return getGame(player) != null
-    }
+    fun isPlayerInGame(player: Player): Boolean = getGame(player) != null
 
     fun getGamePlayer(player: Player): GamePlayer? {
         val game = getGame(player) ?: return null
@@ -65,11 +65,11 @@ object GameManager {
         SUCCESS,
         ALREADY_IN_GAME,
         GAME_STARTED,
-        GAME_ENDING
+        GAME_ENDING,
     }
 
     enum class GameLeaveResult {
         SUCCESS,
-        NOT_IN_GAME
+        NOT_IN_GAME,
     }
 }

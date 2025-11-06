@@ -10,7 +10,10 @@ import org.bukkit.command.CommandSender
 object ArenaCommands {
     private var selectedArena: Arena.Builder? = null
 
-    fun handle(s: CommandSender, args: Array<out String>): Boolean {
+    fun handle(
+        s: CommandSender,
+        args: Array<out String>,
+    ): Boolean {
         if (args.isEmpty() || args[0].lowercase() != "arena") return false
 
         if (s !is org.bukkit.entity.Player) {
@@ -19,7 +22,7 @@ object ArenaCommands {
         }
 
         if (args.size < 2) {
-            s.sendMessage("${P}Usage: ${S}/smashsumo arena [select|list|create|save|center|spawn|respawn|side|bottom|top|info]")
+            s.sendMessage("${P}Usage: $S/smashsumo arena [select|list|create|save|center|spawn|respawn|side|bottom|top|info]")
             return true
         }
 
@@ -31,7 +34,7 @@ object ArenaCommands {
         when (args[1].lowercase()) {
             "select" -> {
                 if (args.size < 3) {
-                    s.sendMessage("${P}Usage: ${S}/smashsumo arena select [name]")
+                    s.sendMessage("${P}Usage: $S/smashsumo arena select [name]")
                     return true
                 }
                 val arenaName = args[2]
@@ -44,7 +47,7 @@ object ArenaCommands {
             }
             "create" -> {
                 if (args.size < 3) {
-                    s.sendMessage("${P}Usage: ${S}/smashsumo arena create [name]")
+                    s.sendMessage("${P}Usage: $S/smashsumo arena create [name]")
                     return true
                 }
                 val arenaName = args[2]
@@ -52,10 +55,11 @@ object ArenaCommands {
                     s.sendMessage("${P}Arena ${S}$arenaName ${P}already exists.")
                     return true
                 }
-                val arena = Arena.Builder(
-                    name = arenaName,
-                    center = s.location
-                )
+                val arena =
+                    Arena.Builder(
+                        name = arenaName,
+                        center = s.location,
+                    )
                 selectedArena = arena
                 s.sendMessage("${P}Arena ${S}$arenaName ${P}created and selected.")
             }
@@ -73,7 +77,12 @@ object ArenaCommands {
                     return true
                 }
                 selectedArena!!.spawnRadius = Utils.latD(selectedArena!!.center, s.location)
-                s.sendMessage("${P}Arena ${S}${selectedArena!!.name}'s ${P}spawn radius has been set to ${S}${String.format("%.2f", selectedArena!!.spawnRadius)}${P}.")
+                s.sendMessage(
+                    "${P}Arena ${S}${selectedArena!!.name}'s ${P}spawn radius has been set to ${S}${String.format(
+                        "%.2f",
+                        selectedArena!!.spawnRadius,
+                    )}$P.",
+                )
             }
             "side" -> {
                 if (selectedArena == null) {
@@ -81,7 +90,12 @@ object ArenaCommands {
                     return true
                 }
                 selectedArena!!.sideRadius = Utils.latD(selectedArena!!.center, s.location)
-                s.sendMessage("${P}Arena ${S}${selectedArena!!.name}'s ${P}side barrier radius has been set to ${S}${String.format("%.2f", selectedArena!!.sideRadius)}${P}.")
+                s.sendMessage(
+                    "${P}Arena ${S}${selectedArena!!.name}'s ${P}side barrier radius has been set to ${S}${String.format(
+                        "%.2f",
+                        selectedArena!!.sideRadius,
+                    )}$P.",
+                )
             }
             "bottom" -> {
                 if (selectedArena == null) {
@@ -89,7 +103,12 @@ object ArenaCommands {
                     return true
                 }
                 selectedArena!!.bottomBarrier = s.location.y
-                s.sendMessage("${P}Arena ${S}${selectedArena!!.name}'s ${P}bottom barrier has been set to Y${S}${String.format("%.2f", selectedArena!!.bottomBarrier)}${P}.")
+                s.sendMessage(
+                    "${P}Arena ${S}${selectedArena!!.name}'s ${P}bottom barrier has been set to Y${S}${String.format(
+                        "%.2f",
+                        selectedArena!!.bottomBarrier,
+                    )}$P.",
+                )
             }
             "top" -> {
                 if (selectedArena == null) {
@@ -97,7 +116,12 @@ object ArenaCommands {
                     return true
                 }
                 selectedArena!!.topBarrier = s.location.y
-                s.sendMessage("${P}Arena ${S}${selectedArena!!.name}'s ${P}top barrier has been set to Y${S}${String.format("%.2f", selectedArena!!.topBarrier!!)}${P}.")
+                s.sendMessage(
+                    "${P}Arena ${S}${selectedArena!!.name}'s ${P}top barrier has been set to Y${S}${String.format(
+                        "%.2f",
+                        selectedArena!!.topBarrier!!,
+                    )}$P.",
+                )
             }
             "respawn" -> {
                 if (selectedArena == null) {
@@ -105,7 +129,9 @@ object ArenaCommands {
                     return true
                 }
                 selectedArena!!.respawnHeight = s.location.blockY
-                s.sendMessage("${P}Arena ${S}${selectedArena!!.name}'s ${P}respawn height has been set to Y${S}${selectedArena!!.respawnHeight}${P}.")
+                s.sendMessage(
+                    "${P}Arena ${S}${selectedArena!!.name}'s ${P}respawn height has been set to Y${S}${selectedArena!!.respawnHeight}$P.",
+                )
             }
             "save" -> {
                 if (selectedArena == null) {
@@ -138,21 +164,26 @@ object ArenaCommands {
                     arena = selectedArena!!
                 }
 
-                s.sendMessage("""${P}Arena Info:
+                s.sendMessage(
+                    """${P}Arena Info:
                     |${P}Name: ${S}${arena.name}
-                    |${P}Center: ${S}${arena.center.world?.name} (${String.format("%.2f", arena.center.x)}, ${String.format("%.2f", arena.center.y)}, ${String.format("%.2f", arena.center.z)})
+                    |${P}Center: ${S}${arena.center.world?.name} (${String.format(
+                        "%.2f",
+                        arena.center.x,
+                    )}, ${String.format("%.2f", arena.center.y)}, ${String.format("%.2f", arena.center.z)})
                     |${P}Spawn Radius: ${S}${String.format("%.2f", arena.spawnRadius)}
                     |${P}Side Barrier Radius: ${S}${String.format("%.2f", arena.sideRadius)}
                     |${P}Respawn Height: ${S}${arena.respawnHeight}
                     |${P}Bottom Barrier: ${S}Y${String.format("%.2f", arena.bottomBarrier)}
                     |${P}Top Barrier: ${if (arena.topBarrier != null) "${S}Y${String.format("%.2f", arena.topBarrier!!)}" else S + "None"}
-                """.trimMargin())
+                    """.trimMargin(),
+                )
             }
             "list" -> {
                 s.sendMessage("${P}Available arenas: ${S}${ArenaManager.arenas.keys.joinToString(", ")}")
             }
             else -> {
-                s.sendMessage("${P}Unknown subcommand. Usage: ${S}/smashsumo arena [select|list]")
+                s.sendMessage("${P}Unknown subcommand. Usage: $S/smashsumo arena [select|list]")
             }
         }
         return true

@@ -7,7 +7,10 @@ import me.cirnoslab.smashsumo.game.GameManager
 import org.bukkit.command.CommandSender
 
 object GameCommands {
-    fun handle(s: CommandSender, args: Array<out String>): Boolean {
+    fun handle(
+        s: CommandSender,
+        args: Array<out String>,
+    ): Boolean {
         if (args.isEmpty() || !listOf("join", "leave", "start").contains(args[0].lowercase())) return false
 
         if (s !is org.bukkit.entity.Player) {
@@ -18,7 +21,7 @@ object GameCommands {
         when (args[0].lowercase()) {
             "join" -> {
                 if (args.size < 2) {
-                    s.sendMessage("${P}Usage: ${S}/smashsumo join [arena]")
+                    s.sendMessage("${P}Usage: $S/smashsumo join [arena]")
                     return true
                 }
 

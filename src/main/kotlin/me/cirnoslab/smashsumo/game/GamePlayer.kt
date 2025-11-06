@@ -2,21 +2,24 @@ package me.cirnoslab.smashsumo.game
 
 import fr.mrmicky.fastboard.FastBoard
 import me.cirnoslab.smashsumo.SmashSumo
-import me.cirnoslab.smashsumo.Utils
 import me.cirnoslab.smashsumo.SmashSumo.Companion.P
 import me.cirnoslab.smashsumo.SmashSumo.Companion.S
 import me.cirnoslab.smashsumo.SmashSumo.Companion.SCOREBOARD_LINE
-import org.bukkit.entity.Player
-import org.bukkit.ChatColor.*
+import me.cirnoslab.smashsumo.Utils
+import org.bukkit.ChatColor.DARK_RED
+import org.bukkit.ChatColor.GRAY
+import org.bukkit.ChatColor.RED
+import org.bukkit.ChatColor.WHITE
+import org.bukkit.ChatColor.YELLOW
 import org.bukkit.Location
-import org.bukkit.scoreboard.Team
+import org.bukkit.entity.Player
 import kotlin.math.sqrt
 
 class GamePlayer(
     val game: Game,
     val player: Player,
     var playerNumber: Int? = null,
-    var lives: Int
+    var lives: Int,
 ) {
     var state: PlayerState = PlayerState.WAITING
     var damage: Double = 0.0
@@ -40,8 +43,8 @@ class GamePlayer(
         get() {
             return when (state) {
                 PlayerState.SPECTATING -> "${P}Currently spectating"
-                PlayerState.WAITING -> "${P}Waiting for players... (${S}${game.gamePlayers.count()}${P})"
-                PlayerState.IN_GAME -> "${color}P${playerNumber} ${P}| ${damageColor}${"%.1f".format(damage)}%${P} | Lives: ${S}$lives"
+                PlayerState.WAITING -> "${P}Waiting for players... (${S}${game.gamePlayers.count()}$P)"
+                PlayerState.IN_GAME -> "${color}P$playerNumber $P| ${damageColor}${"%.1f".format(damage)}%$P | Lives: ${S}$lives"
                 PlayerState.ENDING -> "${P}Waiting to teleport back..."
                 else -> "You should not see this."
             }
@@ -55,22 +58,23 @@ class GamePlayer(
                         SCOREBOARD_LINE,
                         "Waiting for players:",
                         "${S}${game.gamePlayers.size} ${WHITE}currently waiting",
-                        SCOREBOARD_LINE
+                        SCOREBOARD_LINE,
                     )
                 PlayerState.ENDING ->
                     listOf(
                         SCOREBOARD_LINE,
                         "Game ended.",
-                        SCOREBOARD_LINE
+                        SCOREBOARD_LINE,
                     )
 
                 PlayerState.GHOST ->
                     listOf()
                 else -> {
-                    val board = mutableListOf(
-                        SCOREBOARD_LINE,
-                        "Duration: ${game.formattedTime}"
-                    )
+                    val board =
+                        mutableListOf(
+                            SCOREBOARD_LINE,
+                            "Duration: ${game.formattedTime}",
+                        )
                     for (gp in game.startingPlayers!!) {
                         if (gp.playerNumber == null) continue // joined as spectator, should not be possible
                         if (board.size >= 14) break // 12 players max
@@ -90,19 +94,19 @@ class GamePlayer(
         get() = if (playerNumber != null) SmashSumo.playerColor[(playerNumber!! - 1) % 8] else GRAY
 
     val damageColor
-        get() = when (damage) {
-            in 0.0..35.0 -> S
-            in 35.001..65.0 -> YELLOW
-            in 65.001..100.0 -> RED
-            else -> DARK_RED
-        }
+        get() =
+            when (damage) {
+                in 0.0..35.0 -> S
+                in 35.001..65.0 -> YELLOW
+                in 65.001..100.0 -> RED
+                else -> DARK_RED
+            }
 
     enum class PlayerState {
         WAITING,
         IN_GAME,
         SPECTATING,
         GHOST, // for players who left midgame
-        ENDING
+        ENDING,
     }
 }
-

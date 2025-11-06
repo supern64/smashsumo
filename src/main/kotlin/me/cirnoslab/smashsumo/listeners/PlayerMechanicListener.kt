@@ -16,7 +16,6 @@ import org.bukkit.event.entity.EntityRegainHealthEvent
 import org.bukkit.event.entity.FoodLevelChangeEvent
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.event.player.PlayerToggleFlightEvent
-import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.util.Vector
 import kotlin.math.roundToInt
 import kotlin.math.sign
@@ -68,11 +67,12 @@ class PlayerMechanicListener : Listener {
         e.isCancelled = true
         d.damage(d.health - dGP.displayHealth)
         d.health = dGP.displayHealth
-        val dKnockback = a.location.direction
-            .normalize()
-            .setY(if ((d as Entity).isOnGround) 0.5 else 0.5 * sign(a.location.direction.y))
-            .multiply(Vector(dGP.damage / 30.0, dGP.damage / 40.0, dGP.damage / 30.0)) // cumulative damage
-            .multiply(Vector(aMomentum + 1, (aVertMultiplier + 1) * 0.9, aMomentum + 1)) // current attack
+        val dKnockback =
+            a.location.direction
+                .normalize()
+                .setY(if ((d as Entity).isOnGround) 0.5 else 0.5 * sign(a.location.direction.y))
+                .multiply(Vector(dGP.damage / 30.0, dGP.damage / 40.0, dGP.damage / 30.0)) // cumulative damage
+                .multiply(Vector(aMomentum + 1, (aVertMultiplier + 1) * 0.9, aMomentum + 1)) // current attack
 
         if (dKnockback.lengthSquared() < 1.9) {
             dKnockback.normalize().multiply(1.1)
@@ -80,7 +80,10 @@ class PlayerMechanicListener : Listener {
         d.velocity = dKnockback
 
         ActionBar(dGP.actionBarDisplay).send(d)
-        dGP.game.scoreboard.getObjective("%").getScore(d.name).score = dGP.damage.roundToInt()
+        dGP.game.scoreboard
+            .getObjective("%")
+            .getScore(d.name)
+            .score = dGP.damage.roundToInt()
     }
 
     // make players not affected by world
@@ -124,7 +127,10 @@ class PlayerMechanicListener : Listener {
         e.player.allowFlight = false
         e.player.isFlying = false
 
-        e.player.velocity = e.player.location.direction.multiply(1.1).setY(1.5)
+        e.player.velocity =
+            e.player.location.direction
+                .multiply(1.1)
+                .setY(1.5)
         gp.hasDoubleJump = false
     }
 }

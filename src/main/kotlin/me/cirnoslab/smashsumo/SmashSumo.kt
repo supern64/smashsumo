@@ -27,12 +27,14 @@ class SmashSumo : JavaPlugin() {
         HUDManager.SendHUD().runTaskTimer(this, 0L, 5L)
 
         val arenaCount = ArenaManager.init(dataFolder)
-        Companion.config = YamlDocument.create(
-            File(dataFolder, "config.yml"), getResource("config.yml"),
-            UpdaterSettings.builder().setVersioning(BasicVersioning("version")).build(),
-            LoaderSettings.builder().setAutoUpdate(true).build(),
-            DumperSettings.DEFAULT
-        )
+        Companion.config =
+            YamlDocument.create(
+                File(dataFolder, "config.yml"),
+                getResource("config.yml"),
+                UpdaterSettings.builder().setVersioning(BasicVersioning("version")).build(),
+                LoaderSettings.builder().setAutoUpdate(true).build(),
+                DumperSettings.DEFAULT,
+            )
         log("Plugin enabled. Loaded config and $arenaCount arenas.")
     }
 
@@ -44,7 +46,7 @@ class SmashSumo : JavaPlugin() {
         sender: CommandSender,
         command: Command,
         label: String,
-        args: Array<out String>
+        args: Array<out String>,
     ): Boolean {
         if (!command.name.equals("smashsumo", ignoreCase = true)) return false
         return ArenaCommands.handle(sender, args) || GameCommands.handle(sender, args) || ConfigCommands.handle(sender, args)
@@ -54,13 +56,24 @@ class SmashSumo : JavaPlugin() {
         fun log(text: String) {
             Bukkit.getConsoleSender().sendMessage("[SmashSumo] $text")
         }
+
         lateinit var plugin: SmashSumo
         lateinit var config: YamlDocument
 
         val P = "${ChatColor.DARK_AQUA}"
         val S = "${ChatColor.AQUA}"
         const val MAX_LIVES = 3
-        val playerColor = listOf(ChatColor.RED, ChatColor.BLUE, ChatColor.YELLOW, ChatColor.GREEN, ChatColor.AQUA, ChatColor.WHITE, ChatColor.LIGHT_PURPLE, ChatColor.GRAY)
+        val playerColor =
+            listOf(
+                ChatColor.RED,
+                ChatColor.BLUE,
+                ChatColor.YELLOW,
+                ChatColor.GREEN,
+                ChatColor.AQUA,
+                ChatColor.WHITE,
+                ChatColor.LIGHT_PURPLE,
+                ChatColor.GRAY,
+            )
         val SCOREBOARD_LINE: String = "${ChatColor.WHITE}${ChatColor.STRIKETHROUGH}-------------------${ChatColor.RESET}"
     }
 }

@@ -2,15 +2,20 @@ package me.cirnoslab.smashsumo.game
 
 import io.github.theluca98.textapi.Title
 import me.cirnoslab.smashsumo.SmashSumo
-import me.cirnoslab.smashsumo.SmashSumo.Companion.S
 import me.cirnoslab.smashsumo.SmashSumo.Companion.P
+import me.cirnoslab.smashsumo.SmashSumo.Companion.S
 import me.cirnoslab.smashsumo.Utils
 import me.cirnoslab.smashsumo.Utils.setAbsorptionHearts
 import me.cirnoslab.smashsumo.arena.Arena
 import me.cirnoslab.smashsumo.game.GameManager.GameJoinResult
 import me.cirnoslab.smashsumo.game.GameManager.GameLeaveResult
 import org.bukkit.Bukkit
-import org.bukkit.ChatColor.*
+import org.bukkit.ChatColor.BOLD
+import org.bukkit.ChatColor.GOLD
+import org.bukkit.ChatColor.GRAY
+import org.bukkit.ChatColor.RED
+import org.bukkit.ChatColor.WHITE
+import org.bukkit.ChatColor.YELLOW
 import org.bukkit.GameMode
 import org.bukkit.Location
 import org.bukkit.Material
@@ -24,7 +29,8 @@ import org.bukkit.scoreboard.Scoreboard
 import java.util.UUID
 
 class Game(
-    val arena: Arena // game state is tied to arena state
+    // game state is tied to arena state
+    val arena: Arena,
 ) {
     val gamePlayers = mutableMapOf<UUID, GamePlayer>()
     var startingPlayers: List<GamePlayer>? = null
@@ -33,10 +39,11 @@ class Game(
     private var startTime: Long? = null
 
     val formattedTime: String
-        get() = startTime?.let {
-            val duration = Math.floorDiv(System.currentTimeMillis() - it, 1000L).toInt()
-            return "${S}${"%02d".format(Math.floorDiv(duration, 60))}${WHITE}:${S}${"%02d".format(duration % 60)}"
-        } ?: "${S}00${WHITE}:${S}00"
+        get() =
+            startTime?.let {
+                val duration = Math.floorDiv(System.currentTimeMillis() - it, 1000L).toInt()
+                return "${S}${"%02d".format(Math.floorDiv(duration, 60))}$WHITE:${S}${"%02d".format(duration % 60)}"
+            } ?: "${S}00$WHITE:${S}00"
 
     // should be called via GameManager
     fun join(p: Player): GameJoinResult {
@@ -45,14 +52,15 @@ class Game(
 
         val gp = GamePlayer(this, p, null, SmashSumo.MAX_LIVES)
         gamePlayers[p.uniqueId] = gp
+
+        gp.board.updateTitle("${P}${BOLD}Smash Sumo")
+
         if (state != GameState.WAITING) {
             gamePlayers[p.uniqueId]!!.state = GamePlayer.PlayerState.SPECTATING
             p.gameMode = GameMode.SPECTATOR
             p.teleport(Location(arena.center.world, arena.center.x, arena.center.y + 2.0, arena.center.z))
             return GameJoinResult.GAME_STARTED
         }
-
-        gp.board.updateTitle("${P}${BOLD}Smash Sumo")
 
         p.gameMode = GameMode.ADVENTURE
         p.health = 20.0
@@ -63,7 +71,7 @@ class Game(
         p.allowFlight = true
         p.isFlying = false
 
-        p.addPotionEffect(PotionEffect(PotionEffectType.JUMP, Int.MAX_VALUE,1))
+        p.addPotionEffect(PotionEffect(PotionEffectType.JUMP, Int.MAX_VALUE, 1))
         p.teleport(Location(arena.center.world, arena.center.x, arena.center.y + 2.0, arena.center.z))
 
         messageAll("${S}${p.name} ${P}has joined the game!")
@@ -71,7 +79,7 @@ class Game(
     }
 
     // should be called via GameManager
-    fun leave(p: Player) : GameLeaveResult {
+    fun leave(p: Player): GameLeaveResult {
         val gp = gamePlayers[p.uniqueId] ?: throw IllegalArgumentException("tried to kick GamePlayer that doesn't exist")
 
         if (gp.state == GamePlayer.PlayerState.IN_GAME) {
@@ -80,7 +88,9 @@ class Game(
             arena.center.world.strikeLightningEffect(gp.player.location)
 
             if (gp.respawnPoint != null) {
-                arena.center.world.getBlockAt(gp.respawnPoint).type = Material.AIR
+                arena.center.world
+                    .getBlockAt(gp.respawnPoint)
+                    .type = Material.AIR
                 gp.respawnPoint = null
             }
 
@@ -108,7 +118,8 @@ class Game(
         } else {
             p.teleport(Utils.s2l(lobby))
         }
-        messageAll("${S}${p.name} ${P}has left the game!")
+
+        if (startingPlayers == null || startingPlayers!!.contains(gp)) messageAll("${S}${p.name} ${P}has left the game!")
         return GameLeaveResult.SUCCESS
     }
 
@@ -138,8 +149,11 @@ class Game(
         CountdownTask(this).runTaskTimer(SmashSumo.plugin, 0L, 20L)
     }
 
-    class CountdownTask(val game: Game) : BukkitRunnable() {
+    class CountdownTask(
+        val game: Game,
+    ) : BukkitRunnable() {
         var countdown = 3
+
         override fun run() {
             if (countdown > 0) {
                 for (gp in game.getActivePlayers()) {
@@ -173,7 +187,7 @@ class Game(
         scoreboard.getObjective("%").getScore(gp.player.name).score = 0
 
         if (gp.lives == 0) {
-            scoreboard.getTeam("P${gp.playerNumber}").suffix = " ${GRAY}[DEAD]"
+            scoreboard.getTeam("P${gp.playerNumber}").suffix = " $GRAY[DEAD]"
             gp.state = GamePlayer.PlayerState.SPECTATING
             if (getActivePlayers().size == 1) {
                 // game end routine
@@ -196,16 +210,24 @@ class Game(
         }
     }
 
-    class RespawnSetupTask(val game: Game, val gp: GamePlayer) : BukkitRunnable() {
+    @Suppress("DEPRECATION")
+    class RespawnSetupTask(
+        val game: Game,
+        val gp: GamePlayer,
+    ) : BukkitRunnable() {
         override fun run() {
             val rl = gp.respawnPoint ?: return
-            val block = game.arena.center.world.getBlockAt(rl)
+            val block =
+                game.arena.center.world
+                    .getBlockAt(rl)
             block.type = Material.STAINED_GLASS
             block.data = 13 // green stained glass
         }
     }
 
-    class PlayerRespawnTask(val gp: GamePlayer) : BukkitRunnable() {
+    class PlayerRespawnTask(
+        val gp: GamePlayer,
+    ) : BukkitRunnable() {
         override fun run() {
             val rl = gp.respawnPoint ?: return // should never return unless player leaves midgame
             gp.player.playSound(gp.player.location, Sound.NOTE_PIANO, 1.0f, 1.9f)
@@ -215,14 +237,21 @@ class Game(
         }
     }
 
-    class RespawnPlatformExpireTask(val game: Game, val gp: GamePlayer) : BukkitRunnable() {
+    @Suppress("DEPRECATION")
+    class RespawnPlatformExpireTask(
+        val game: Game,
+        val gp: GamePlayer,
+    ) : BukkitRunnable() {
         var phase = 0
+
         override fun run() {
             if (gp.respawnPoint == null) { // don't run if respawn state has been reset
                 this.cancel()
                 return
             }
-            val block = game.arena.center.world.getBlockAt(gp.respawnPoint)
+            val block =
+                game.arena.center.world
+                    .getBlockAt(gp.respawnPoint)
             when (phase) {
                 0 -> block.data = 4 // yellow
                 1 -> block.data = 1 // orange
@@ -240,7 +269,7 @@ class Game(
     fun endGame() {
         state = GameState.ENDING
         val winnerName = getActivePlayers()[0].player.name
-        messageAll("${GOLD}${BOLD}${winnerName} ${YELLOW}is the winner!")
+        messageAll("${GOLD}${BOLD}$winnerName ${YELLOW}is the winner!")
         val title = Title("${P}GAME!", "${YELLOW}Winner: ${GOLD}${BOLD}$winnerName", 0, 60, 10)
 
         gamePlayers.values.forEach { gp ->
@@ -253,7 +282,9 @@ class Game(
         EndGameTask(this).runTaskLater(SmashSumo.plugin, 20 * 6)
     }
 
-    class EndGameTask(val game: Game) : BukkitRunnable() {
+    class EndGameTask(
+        val game: Game,
+    ) : BukkitRunnable() {
         override fun run() {
             game.arena.state = Arena.ArenaState.AVAILABLE
             val lobby = SmashSumo.config.getString("lobby")
@@ -282,26 +313,14 @@ class Game(
         gamePlayers.values.forEach { gp -> gp.player.sendMessage(m) }
     }
 
-    fun messagePlayers(m: String) {
-        gamePlayers.values.forEach { gp -> if (gp.state != GamePlayer.PlayerState.SPECTATING) gp.player.sendMessage(m) }
-    }
+    fun getActivePlayers(): List<GamePlayer> = gamePlayers.values.filter { it.state == GamePlayer.PlayerState.IN_GAME }
 
-    fun messageExcept(m: String, gp: GamePlayer) {
-        gamePlayers.values.forEach { ggp -> if (ggp.player.uniqueId != gp.player.uniqueId) gp.player.sendMessage(m) }
-    }
-
-    fun getActivePlayers(): List<GamePlayer> {
-        return gamePlayers.values.filter { it.state == GamePlayer.PlayerState.IN_GAME }
-    }
-
-    fun getRespawningPlayers(): List<GamePlayer> {
-        return gamePlayers.values.filter { it.respawnPoint != null }
-    }
+    fun getRespawningPlayers(): List<GamePlayer> = gamePlayers.values.filter { it.respawnPoint != null }
 
     enum class GameState {
         WAITING,
         COUNTDOWN,
         IN_GAME,
-        ENDING
+        ENDING,
     }
 }

@@ -22,7 +22,9 @@ class GameListener : Listener {
                 gp.game.kill(gp)
             }
             GamePlayer.PlayerState.WAITING -> {
-                e.player.teleport(Location(gp.game.arena.center.world, gp.game.arena.center.x, gp.game.arena.center.y + 2.0, gp.game.arena.center.z))
+                e.player.teleport(
+                    Location(gp.game.arena.center.world, gp.game.arena.center.x, gp.game.arena.center.y + 2.0, gp.game.arena.center.z),
+                )
             }
             else -> return
         }
@@ -39,7 +41,10 @@ class GameListener : Listener {
         if (gp.respawnPoint == null || gp.waitRespawn) return
 
         if (e.to.y > e.from.y && !(e.player as Entity).isOnGround) {
-            gp.respawnPoint!!.world.getBlockAt(gp.respawnPoint).type = Material.AIR
+            gp.respawnPoint!!
+                .world
+                .getBlockAt(gp.respawnPoint)
+                .type = Material.AIR
             gp.respawnPoint = null
         }
     }

@@ -3,6 +3,7 @@ import org.gradle.kotlin.dsl.dependencies
 plugins {
     kotlin("jvm") version "2.2.20"
     id("com.gradleup.shadow") version "8.3.9"
+    id("org.jlleitschuh.gradle.ktlint") version "13.1.0"
 }
 
 group = "me.cirnoslab"

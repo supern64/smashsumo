@@ -13,13 +13,15 @@ object ArenaManager {
     val arenas: MutableMap<String, Arena> = mutableMapOf()
     private lateinit var arenaF: YamlDocument
 
-    fun init(dataFolder: File) : Int {
-        arenaF = YamlDocument.create(
-            File(dataFolder, "arenas.yml"), SmashSumo.plugin.getResource("arenas.yml"),
-            UpdaterSettings.builder().setVersioning(BasicVersioning("version")).build(),
-            LoaderSettings.builder().setAutoUpdate(true).build(),
-            DumperSettings.DEFAULT
-        )
+    fun init(dataFolder: File): Int {
+        arenaF =
+            YamlDocument.create(
+                File(dataFolder, "arenas.yml"),
+                SmashSumo.plugin.getResource("arenas.yml"),
+                UpdaterSettings.builder().setVersioning(BasicVersioning("version")).build(),
+                LoaderSettings.builder().setAutoUpdate(true).build(),
+                DumperSettings.DEFAULT,
+            )
         return loadArenaList()
     }
 

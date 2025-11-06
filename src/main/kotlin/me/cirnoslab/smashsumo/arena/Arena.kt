@@ -12,7 +12,7 @@ class Arena(
     val bottomBarrier: Double,
     val sideRadius: Double,
     val respawnHeight: Int,
-    val topBarrier: Double? = null
+    val topBarrier: Double? = null,
 ) {
     var state: ArenaState = ArenaState.AVAILABLE
 
@@ -44,7 +44,8 @@ class Arena(
         if (n == 0) return Location(center.world, center.blockX.toDouble(), respawnHeight.toDouble(), center.blockZ.toDouble())
         val respawnRadius = spawnRadius / 1.5
         val angle = 2 * Math.PI / 6 * (n - 1) // surely no more than 7 players would die at once right?
-        return Location(center.world,
+        return Location(
+            center.world,
             center.x + respawnRadius * cos(angle),
             respawnHeight.toDouble(),
             center.z + respawnRadius * sin(angle),
@@ -58,7 +59,7 @@ class Arena(
         var bottomBarrier: Double = 0.0,
         var sideRadius: Double = 20.0,
         var respawnHeight: Int = center.blockY + 3,
-        var topBarrier: Double? = null
+        var topBarrier: Double? = null,
     ) {
         constructor(arena: Arena) : this(
             arena.name,
@@ -67,7 +68,7 @@ class Arena(
             arena.bottomBarrier,
             arena.sideRadius,
             arena.respawnHeight,
-            arena.topBarrier
+            arena.topBarrier,
         )
 
         fun checkArena(): List<ArenaInvalidCause> {
@@ -83,17 +84,18 @@ class Arena(
 
         fun build() = Arena(name, center, spawnRadius, bottomBarrier, sideRadius, respawnHeight, topBarrier)
 
-        enum class ArenaInvalidCause(val description: String) {
+        enum class ArenaInvalidCause(
+            val description: String,
+        ) {
             INVALID_SPAWN_RADIUS("Spawn radius must be less than side radius."),
             INVALID_TOP_BARRIER("Top barrier must be above the bottom barrier, and must be at least 8 blocks above the center."),
-            INVALID_RESPAWN_HEIGHT("Respawn height must be lower than top barrier by 3 blocks.")
+            INVALID_RESPAWN_HEIGHT("Respawn height must be lower than top barrier by 3 blocks."),
         }
     }
 
     enum class ArenaState {
         AVAILABLE,
         WAITING, // or ending
-        PLAYING
+        PLAYING,
     }
 }
-

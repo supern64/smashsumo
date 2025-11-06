@@ -8,8 +8,16 @@ import me.cirnoslab.smashsumo.arena.ArenaManager
 import org.bukkit.command.CommandSender
 
 object ConfigCommands {
-    fun handle(s: CommandSender, args: Array<out String>): Boolean {
+    fun handle(
+        s: CommandSender,
+        args: Array<out String>,
+    ): Boolean {
         if (args.isEmpty() || args[0].lowercase() != "config") return false
+
+        if (args.size < 2) {
+            s.sendMessage("${P}Usage: $S/smashsumo config [lobby|reload]")
+            return true
+        }
 
         when (args[1].lowercase()) {
             "reload" -> {
@@ -29,7 +37,7 @@ object ConfigCommands {
                 return true
             }
             else -> {
-                s.sendMessage("${P}Unknown subcommand. Usage: ${S}/smashsumo config [lobby|reload]")
+                s.sendMessage("${P}Unknown subcommand. Usage: $S/smashsumo config [lobby|reload]")
                 return true
             }
         }
