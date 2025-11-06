@@ -75,8 +75,12 @@ class Arena(
             val cause = mutableListOf<ArenaInvalidCause>()
             if (spawnRadius >= sideRadius) cause.add(ArenaInvalidCause.INVALID_SPAWN_RADIUS)
             if (topBarrier != null) {
-                if (topBarrier!! <= bottomBarrier || topBarrier!! - center.y < 8) cause.add(ArenaInvalidCause.INVALID_TOP_BARRIER)
-                if (topBarrier!! <= respawnHeight + 3) cause.add(ArenaInvalidCause.INVALID_RESPAWN_HEIGHT)
+                if (topBarrier!! <= bottomBarrier ||
+                    topBarrier!! - center.y < MINIMUM_TOP_BARRIER_HEIGHT
+                ) {
+                    cause.add(ArenaInvalidCause.INVALID_TOP_BARRIER)
+                }
+                if (topBarrier!! <= respawnHeight + MINIMUM_RESPAWN_HEIGHT) cause.add(ArenaInvalidCause.INVALID_RESPAWN_HEIGHT)
             }
 
             return cause
@@ -97,5 +101,10 @@ class Arena(
         AVAILABLE,
         WAITING, // or ending
         PLAYING,
+    }
+
+    companion object {
+        const val MINIMUM_TOP_BARRIER_HEIGHT = 8
+        const val MINIMUM_RESPAWN_HEIGHT = 3
     }
 }

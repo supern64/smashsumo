@@ -27,6 +27,7 @@ import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scoreboard.DisplaySlot
 import org.bukkit.scoreboard.Scoreboard
 import java.util.UUID
+import java.util.logging.Level
 
 class Game(
     // game state is tied to arena state
@@ -114,7 +115,7 @@ class Game(
 
         val lobby = SmashSumo.config.getString("lobby")
         if (lobby == null) {
-            SmashSumo.log("[Warning] Lobby location not set. Player will not be teleported.")
+            SmashSumo.log(Level.WARNING, "Lobby location not set. Player will not be teleported.")
         } else {
             p.teleport(Utils.s2l(lobby))
         }
@@ -289,7 +290,7 @@ class Game(
             game.arena.state = Arena.ArenaState.AVAILABLE
             val lobby = SmashSumo.config.getString("lobby")
             if (lobby == null) {
-                SmashSumo.log("[Warning] Lobby location not set. Players will not be teleported.")
+                SmashSumo.log(Level.WARNING, "Lobby location not set. Players will not be teleported.")
             }
             game.gamePlayers.values.forEach { gp ->
                 gp.player.gameMode = GameMode.SURVIVAL

@@ -12,12 +12,12 @@ import me.cirnoslab.smashsumo.commands.GameCommands
 import me.cirnoslab.smashsumo.game.HUDManager
 import me.cirnoslab.smashsumo.listeners.GameListener
 import me.cirnoslab.smashsumo.listeners.PlayerMechanicListener
-import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
+import java.util.logging.Level
 
 class SmashSumo : JavaPlugin() {
     override fun onEnable() {
@@ -54,7 +54,14 @@ class SmashSumo : JavaPlugin() {
 
     companion object {
         fun log(text: String) {
-            Bukkit.getConsoleSender().sendMessage("[SmashSumo] $text")
+            plugin.logger.log(Level.INFO, text)
+        }
+
+        fun log(
+            level: Level,
+            text: String,
+        ) {
+            plugin.logger.log(level, text)
         }
 
         lateinit var plugin: SmashSumo
