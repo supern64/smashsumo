@@ -19,6 +19,11 @@ object ConfigCommands {
             return true
         }
 
+        if (!s.hasPermission("smashsumo.admin")) {
+            s.sendMessage("${P}You do not have permission to use this command.")
+            return true
+        }
+
         when (args[1].lowercase()) {
             "reload" -> {
                 ArenaManager.reload()
