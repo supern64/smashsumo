@@ -30,7 +30,7 @@ class PlayerMechanicListener : Listener {
 
         // bonus double jump reset
         if ((e.player as Entity).isOnGround) {
-            gp.hasDoubleJump = true
+            gp.doubleJumpPhase = 0
             gp.player.allowFlight = true
         }
     }
@@ -115,22 +115,23 @@ class PlayerMechanicListener : Listener {
         e.isCancelled = true
     }
 
-    // double jumping
+    // triple jumping
     @EventHandler
     fun onPlayerFly(e: PlayerToggleFlightEvent) {
         val gp = GameManager.getGamePlayer(e.player) ?: return
         if (gp.state == GamePlayer.PlayerState.SPECTATING || gp.game.state == Game.GameState.COUNTDOWN) return
         if (gp.player.gameMode == GameMode.CREATIVE || gp.player.gameMode == GameMode.SPECTATOR) return
-        if (!gp.hasDoubleJump) return
 
         e.isCancelled = true
-        e.player.allowFlight = false
         e.player.isFlying = false
-
+        if (gp.doubleJumpPhase == 2) {
+            e.player.allowFlight = false
+            return
+        }
         e.player.velocity =
             e.player.location.direction
                 .multiply(1.1)
-                .setY(1.5)
-        gp.hasDoubleJump = false
+                .setY(1.15) // 1.5
+        gp.doubleJumpPhase += 1
     }
 }
