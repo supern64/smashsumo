@@ -98,12 +98,18 @@ class PlayerMechanicListener : Listener {
             a.location.direction
                 .normalize()
                 .setY(if ((d as Entity).isOnGround) 0.5 else 0.5 * sign(a.location.direction.y))
-                .multiply(Vector(dGP.damage / 30.0, dGP.damage / 40.0, dGP.damage / 30.0)) // cumulative damage
+                .multiply(Vector(dGP.damage / 40.0, dGP.damage / 50.0, dGP.damage / 40.0)) // cumulative damage
                 // current attack
-                .multiply(Vector(aGP.lastHitMomentum + 1, (aGP.lastHitVerticalMultiplier + 1) * 0.9, aGP.lastHitMomentum + 1))
+                .multiply(
+                    Vector(
+                        (aGP.lastHitMomentum + 1) * 0.7,
+                        (aGP.lastHitVerticalMultiplier + 1) * 0.8,
+                        (aGP.lastHitMomentum + 1) * 0.7,
+                    ),
+                )
 
-        if (dKnockback.lengthSquared() < 1.9) {
-            dKnockback.normalize().multiply(1.1)
+        if (dKnockback.lengthSquared() < 1) {
+            dKnockback.normalize()
         }
         e.knockback = dKnockback
     }
@@ -153,7 +159,7 @@ class PlayerMechanicListener : Listener {
         e.player.velocity =
             e.player.location.direction
                 .multiply(1.1)
-                .setY(1.15) // 1.5
+                .setY(0.95) // 1.5
         gp.jumpPhase += 1
     }
 }
