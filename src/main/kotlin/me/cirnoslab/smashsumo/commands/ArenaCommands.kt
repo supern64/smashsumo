@@ -173,9 +173,18 @@ object ArenaCommands {
                                 ArenaManager.arenas.keys.forEach { arenaName ->
                                     builder.suggest(arenaName)
                                 }
+                                builder.suggest("current")
                                 builder.buildFuture()
                             }.executes { ctx ->
                                 val arenaName = StringArgumentType.getString(ctx, "name")
+                                if (arenaName.equals("current")) {
+                                    if (selectedArena == null) {
+                                        ctx.source.executor!!.sendRichMessage("${P}No arena selected.")
+                                        return@executes -1
+                                    }
+                                    ctx.source.executor!!.sendRichMessage(Utils.arenaInfo(selectedArena!!))
+                                    return@executes Command.SINGLE_SUCCESS
+                                }
                                 if (!ArenaManager.arenas.containsKey(arenaName)) {
                                     ctx.source.executor!!.sendRichMessage("${P}Arena ${S}$arenaName ${P}does not exist.")
                                     return@executes -1
@@ -183,11 +192,7 @@ object ArenaCommands {
                                 ctx.source.executor!!.sendRichMessage(Utils.arenaInfo(ArenaManager.arenas[arenaName]!!))
                                 Command.SINGLE_SUCCESS
                             },
-                    ).requires { selectedArena != null }
-                    .executes { ctx ->
-                        ctx.source.executor!!.sendRichMessage(Utils.arenaInfo(selectedArena!!))
-                        Command.SINGLE_SUCCESS
-                    },
+                    ),
             ).then(
                 Commands
                     .literal("list")
