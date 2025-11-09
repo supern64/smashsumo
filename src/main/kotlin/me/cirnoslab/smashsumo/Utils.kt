@@ -23,7 +23,8 @@ object Utils {
 
     fun s2l(s: String): Location {
         val parts = s.split(":")
-        val world = SmashSumo.plugin.server.getWorld(parts[0])!!
+        require(parts.size == 4)
+        val world = SmashSumo.plugin.server.getWorld(parts[0])
         val x = parts[1].toDouble()
         val y = parts[2].toDouble()
         val z = parts[3].toDouble()

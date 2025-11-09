@@ -30,7 +30,7 @@ class PlayerMechanicListener : Listener {
 
         // bonus double jump reset
         if ((e.player as Entity).isOnGround) {
-            gp.doubleJumpPhase = 0
+            gp.jumpPhase = 0
             gp.player.allowFlight = true
         }
     }
@@ -124,14 +124,12 @@ class PlayerMechanicListener : Listener {
 
         e.isCancelled = true
         e.player.isFlying = false
-        if (gp.doubleJumpPhase == 2) {
-            e.player.allowFlight = false
-            return
-        }
+
         e.player.velocity =
             e.player.location.direction
                 .multiply(1.1)
                 .setY(1.15) // 1.5
-        gp.doubleJumpPhase += 1
+        if (gp.jumpPhase == 1) e.player.allowFlight = false
+        gp.jumpPhase += 1
     }
 }
