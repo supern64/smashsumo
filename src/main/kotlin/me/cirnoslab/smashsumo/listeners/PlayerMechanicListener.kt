@@ -1,9 +1,12 @@
 package me.cirnoslab.smashsumo.listeners
 
-import io.github.theluca98.textapi.ActionBar
+import com.destroystokyo.paper.event.entity.EntityKnockbackByEntityEvent
+import io.papermc.paper.event.entity.EntityKnockbackEvent
+import io.papermc.paper.scoreboard.numbers.NumberFormat
 import me.cirnoslab.smashsumo.game.Game
 import me.cirnoslab.smashsumo.game.GameManager
 import me.cirnoslab.smashsumo.game.GamePlayer
+import net.kyori.adventure.text.Component.text
 import org.bukkit.GameMode
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
@@ -17,7 +20,6 @@ import org.bukkit.event.entity.FoodLevelChangeEvent
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.event.player.PlayerToggleFlightEvent
 import org.bukkit.util.Vector
-import kotlin.math.roundToInt
 import kotlin.math.sign
 import kotlin.random.Random
 
@@ -30,12 +32,12 @@ class PlayerMechanicListener : Listener {
 
         // bonus double jump reset
         if ((e.player as Entity).isOnGround) {
-            gp.doubleJumpPhase = 0
+            gp.jumpPhase = 0
             gp.player.allowFlight = true
         }
     }
 
-    // apply knockback
+    // apply knockback & damage
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onPlayerHit(e: EntityDamageByEntityEvent) {
         if (e.entity !is Player || e.damager !is Player) return
@@ -61,29 +63,49 @@ class PlayerMechanicListener : Listener {
             return
         }
 
-        val aVertMultiplier = -a.velocity.y.coerceAtMost(0.0)
-        val aMomentum = aGP.speed
-        dGP.damage += Random.nextDouble(2.0, 3.0) + aMomentum * Random.nextDouble(10.0, 15.0)
-        e.isCancelled = true
-        d.damage(d.health - dGP.displayHealth)
-        d.health = dGP.displayHealth
+        aGP.lastHitVerticalMultiplier = -a.velocity.y.coerceAtMost(0.0)
+        aGP.lastHitMomentum = aGP.speed
+        dGP.damage += Random.nextDouble(2.0, 3.0) + aGP.lastHitMomentum * Random.nextDouble(10.0, 15.0)
+        e.damage = (d.health - dGP.displayHealth).coerceAtLeast(0.0)
+
+        dGP.player.sendActionBar(dGP.actionBarDisplay)
+        dGP.game.scoreboard.getObjective("percent")?.getScore(dGP.player.name)?.numberFormat(
+            NumberFormat.fixed(
+                dGP.lifeString
+                    .appendSpace()
+                    .append(text("%.1f".format(dGP.damage), dGP.damageColor)),
+            ),
+        )
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    fun onPlayerKnockback(e: EntityKnockbackByEntityEvent) {
+        if (e.cause != EntityKnockbackEvent.Cause.ENTITY_ATTACK) return
+        if (e.entity !is Player || e.hitBy !is Player) return
+        val d = e.entity as Player
+        val a = e.hitBy as Player
+        val aGP = GameManager.getGamePlayer(a)
+        val dGP = GameManager.getGamePlayer(d)
+
+        if (aGP == null && dGP == null) return
+        if (aGP == null || dGP == null) {
+            e.isCancelled = true
+            return
+        }
+
+        // must've passed through EntityDamageByEntityEvent to get to this point
         val dKnockback =
             a.location.direction
                 .normalize()
                 .setY(if ((d as Entity).isOnGround) 0.5 else 0.5 * sign(a.location.direction.y))
                 .multiply(Vector(dGP.damage / 30.0, dGP.damage / 40.0, dGP.damage / 30.0)) // cumulative damage
-                .multiply(Vector(aMomentum + 1, (aVertMultiplier + 1) * 0.9, aMomentum + 1)) // current attack
+                // current attack
+                .multiply(Vector(aGP.lastHitMomentum + 1, (aGP.lastHitVerticalMultiplier + 1) * 0.9, aGP.lastHitMomentum + 1))
 
         if (dKnockback.lengthSquared() < 1.9) {
             dKnockback.normalize().multiply(1.1)
         }
-        d.velocity = dKnockback
-
-        ActionBar(dGP.actionBarDisplay).send(d)
-        dGP.game.scoreboard
-            .getObjective("%")
-            .getScore(d.name)
-            .score = dGP.damage.roundToInt()
+        e.knockback = dKnockback
     }
 
     // make players not affected by world
@@ -124,7 +146,7 @@ class PlayerMechanicListener : Listener {
 
         e.isCancelled = true
         e.player.isFlying = false
-        if (gp.doubleJumpPhase == 2) {
+        if (gp.jumpPhase == 2) {
             e.player.allowFlight = false
             return
         }
@@ -132,6 +154,6 @@ class PlayerMechanicListener : Listener {
             e.player.location.direction
                 .multiply(1.1)
                 .setY(1.15) // 1.5
-        gp.doubleJumpPhase += 1
+        gp.jumpPhase += 1
     }
 }

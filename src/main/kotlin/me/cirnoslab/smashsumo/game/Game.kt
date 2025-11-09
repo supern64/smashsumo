@@ -1,31 +1,32 @@
 package me.cirnoslab.smashsumo.game
 
-import io.github.theluca98.textapi.Title
+import io.papermc.paper.scoreboard.numbers.NumberFormat
 import me.cirnoslab.smashsumo.SmashSumo
 import me.cirnoslab.smashsumo.SmashSumo.Companion.P
 import me.cirnoslab.smashsumo.SmashSumo.Companion.S
 import me.cirnoslab.smashsumo.Utils
-import me.cirnoslab.smashsumo.Utils.setAbsorptionHearts
+import me.cirnoslab.smashsumo.Utils.mm
 import me.cirnoslab.smashsumo.arena.Arena
 import me.cirnoslab.smashsumo.game.GameManager.GameJoinResult
 import me.cirnoslab.smashsumo.game.GameManager.GameLeaveResult
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.Component.text
+import net.kyori.adventure.text.format.NamedTextColor.GRAY
+import net.kyori.adventure.title.Title
 import org.bukkit.Bukkit
-import org.bukkit.ChatColor.BOLD
-import org.bukkit.ChatColor.GOLD
-import org.bukkit.ChatColor.GRAY
-import org.bukkit.ChatColor.RED
-import org.bukkit.ChatColor.WHITE
-import org.bukkit.ChatColor.YELLOW
 import org.bukkit.GameMode
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.Sound
+import org.bukkit.attribute.Attribute
 import org.bukkit.entity.Player
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.scheduler.BukkitRunnable
+import org.bukkit.scoreboard.Criteria
 import org.bukkit.scoreboard.DisplaySlot
 import org.bukkit.scoreboard.Scoreboard
+import java.time.Duration
 import java.util.UUID
 import java.util.logging.Level
 
@@ -39,12 +40,12 @@ class Game(
     val scoreboard: Scoreboard = Bukkit.getScoreboardManager().newScoreboard
     private var startTime: Long? = null
 
-    val formattedTime: String
+    val formattedTime: Component
         get() =
             startTime?.let {
                 val duration = Math.floorDiv(System.currentTimeMillis() - it, 1000L).toInt()
-                return "${S}${"%02d".format(Math.floorDiv(duration, 60))}$WHITE:${S}${"%02d".format(duration % 60)}"
-            } ?: "${S}00$WHITE:${S}00"
+                return "${S}${"%02d".format(Math.floorDiv(duration, 60))}<white>:${S}${"%02d".format(duration % 60)}".mm()
+            } ?: "${S}00<white>:${S}00".mm()
 
     // should be called via GameManager
     fun join(p: Player): GameJoinResult {
@@ -54,7 +55,7 @@ class Game(
         val gp = GamePlayer(this, p, null, SmashSumo.MAX_LIVES)
         gamePlayers[p.uniqueId] = gp
 
-        gp.board.updateTitle("${P}${BOLD}Smash Sumo")
+        gp.board.updateTitle("$P<bold>Smash Sumo".mm())
 
         if (state != GameState.WAITING) {
             gamePlayers[p.uniqueId]!!.state = GamePlayer.PlayerState.SPECTATING
@@ -66,13 +67,16 @@ class Game(
         p.gameMode = GameMode.ADVENTURE
         p.health = 20.0
         p.foodLevel = 20
-        p.setAbsorptionHearts(6f)
+        p.absorptionAmount = 6.0
+        p.getAttribute(Attribute.ATTACK_SPEED)!!.baseValue = 6.0
+
+        p.updateCommands()
 
         // double jump setup
         p.allowFlight = true
         p.isFlying = false
 
-        p.addPotionEffect(PotionEffect(PotionEffectType.JUMP, Int.MAX_VALUE, 1))
+        p.addPotionEffect(PotionEffect(PotionEffectType.JUMP_BOOST, Int.MAX_VALUE, 1))
         p.teleport(Location(arena.center.world, arena.center.x, arena.center.y + 2.0, arena.center.z))
 
         messageAll("${S}${p.name} ${P}has joined the game!")
@@ -90,7 +94,7 @@ class Game(
 
             if (gp.respawnPoint != null) {
                 arena.center.world
-                    .getBlockAt(gp.respawnPoint)
+                    .getBlockAt(gp.respawnPoint!!)
                     .type = Material.AIR
                 gp.respawnPoint = null
             }
@@ -107,8 +111,10 @@ class Game(
 
         gamePlayers.remove(p.uniqueId)
         p.gameMode = GameMode.SURVIVAL
-        p.setAbsorptionHearts(0f)
-        p.removePotionEffect(PotionEffectType.JUMP)
+        p.absorptionAmount = 0.0
+        p.removePotionEffect(PotionEffectType.JUMP_BOOST)
+        p.getAttribute(Attribute.ATTACK_SPEED)!!.baseValue = 4.0
+        p.updateCommands()
 
         p.allowFlight = false
         p.isFlying = false
@@ -130,7 +136,7 @@ class Game(
         state = GameState.COUNTDOWN
 
         val spawnPoints = arena.getSpawnLocations(gamePlayers.size)
-        val health = scoreboard.registerNewObjective("%", "dummy")
+        val health = scoreboard.registerNewObjective("percent", Criteria.DUMMY, text("%"))
         health.displaySlot = DisplaySlot.BELOW_NAME
 
         gamePlayers.values.forEachIndexed { i, gp ->
@@ -138,11 +144,16 @@ class Game(
             gp.player.teleport(spawnPoints[i])
             gp.playerNumber = i + 1
 
-            health.getScore(gp.player.name).score = 0
+            health.getScore(gp.player.name).numberFormat(
+                NumberFormat.fixed(
+                    gp.lifeString
+                        .appendSpace()
+                        .append(text("%.1f".format(gp.damage), gp.damageColor)),
+                ),
+            )
 
             val gpTeam = scoreboard.registerNewTeam("P${gp.playerNumber}")
-            gpTeam.prefix = "${gp.color}[P${gp.playerNumber}] "
-            gpTeam.suffix = " " + gp.lifeString
+            gpTeam.prefix(text("[P${gp.playerNumber}] ", gp.color))
             gpTeam.addEntry(gp.player.name)
             gp.player.scoreboard = scoreboard
         }
@@ -158,15 +169,27 @@ class Game(
         override fun run() {
             if (countdown > 0) {
                 for (gp in game.getActivePlayers()) {
-                    gp.player.playSound(gp.player.location, Sound.NOTE_PIANO, 1.0f, 0.95f)
-                    Title("$countdown", "", 0, 20, 0).send(gp.player)
+                    gp.player.playSound(gp.player.location, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 0.95f)
+                    gp.player.showTitle(
+                        Title.title(
+                            text(countdown),
+                            Component.empty(),
+                            Title.Times.times(Duration.ZERO, Duration.ofSeconds(1), Duration.ZERO),
+                        ),
+                    )
                 }
                 countdown--
                 return
             }
             for (gp in game.getActivePlayers()) {
-                gp.player.playSound(gp.player.location, Sound.NOTE_PIANO, 1.0f, 1.9f)
-                Title("GO!", "", 0, 15, 5).send(gp.player)
+                gp.player.playSound(gp.player.location, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.9f)
+                gp.player.showTitle(
+                    Title.title(
+                        text("GO!"),
+                        Component.empty(),
+                        Title.Times.times(Duration.ZERO, Duration.ofMillis(750), Duration.ofMillis(250)),
+                    ),
+                )
             }
             game.startTime = System.currentTimeMillis()
             game.state = GameState.IN_GAME
@@ -183,23 +206,28 @@ class Game(
         gp.lives -= 1
         gp.damage = 0.0
         gp.player.health = 20.0
+        gp.player.absorptionAmount = gp.lives * 2.0
 
-        gp.player.setAbsorptionHearts(gp.lives * 2.0f)
-        scoreboard.getObjective("%").getScore(gp.player.name).score = 0
+        scoreboard.getObjective("percent")?.getScore(gp.player.name)?.numberFormat(
+            NumberFormat.fixed(
+                gp.lifeString
+                    .appendSpace()
+                    .append(text("%.1f".format(gp.damage), gp.damageColor)),
+            ),
+        )
 
         if (gp.lives == 0) {
-            scoreboard.getTeam("P${gp.playerNumber}").suffix = " $GRAY[DEAD]"
+            scoreboard.getTeam("P${gp.playerNumber}")?.suffix(text("[DEAD]", GRAY))
             gp.state = GamePlayer.PlayerState.SPECTATING
             if (getActivePlayers().size == 1) {
                 // game end routine
                 endGame()
             } else {
                 gp.player.gameMode = GameMode.SPECTATOR
-                gp.player.sendMessage("${RED}You have been eliminated! You are now a spectator.")
+                gp.player.sendRichMessage("<red>You have been eliminated! You are now a spectator.")
             }
         } else {
             gp.player.gameMode = GameMode.SPECTATOR
-            scoreboard.getTeam("P${gp.playerNumber}").suffix = " " + gp.lifeString
 
             val respawnLocation = arena.getRespawnPoint(getRespawningPlayers().size)
             gp.respawnPoint = respawnLocation
@@ -221,8 +249,7 @@ class Game(
             val block =
                 game.arena.center.world
                     .getBlockAt(rl)
-            block.type = Material.STAINED_GLASS
-            block.data = 13 // green stained glass
+            block.type = Material.GREEN_STAINED_GLASS
         }
     }
 
@@ -231,7 +258,7 @@ class Game(
     ) : BukkitRunnable() {
         override fun run() {
             val rl = gp.respawnPoint ?: return // should never return unless player leaves midgame
-            gp.player.playSound(gp.player.location, Sound.NOTE_PIANO, 1.0f, 1.9f)
+            gp.player.playSound(gp.player.location, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.9f)
             gp.player.gameMode = GameMode.ADVENTURE
             gp.player.teleport(Location(rl.world, rl.blockX + 0.5, rl.blockY + 1.0, rl.blockZ + 0.5, 0f, 90f))
             gp.waitRespawn = false
@@ -252,11 +279,11 @@ class Game(
             }
             val block =
                 game.arena.center.world
-                    .getBlockAt(gp.respawnPoint)
+                    .getBlockAt(gp.respawnPoint!!)
             when (phase) {
-                0 -> block.data = 4 // yellow
-                1 -> block.data = 1 // orange
-                2 -> block.data = 14 // red
+                0 -> block.type = Material.YELLOW_STAINED_GLASS // yellow
+                1 -> block.type = Material.ORANGE_STAINED_GLASS // orange
+                2 -> block.type = Material.RED_STAINED_GLASS // red
                 3 -> {
                     block.type = Material.AIR
                     gp.respawnPoint = null
@@ -270,14 +297,19 @@ class Game(
     fun endGame() {
         state = GameState.ENDING
         val winnerName = getActivePlayers()[0].player.name
-        messageAll("${GOLD}${BOLD}$winnerName ${YELLOW}is the winner!")
-        val title = Title("${P}GAME!", "${YELLOW}Winner: ${GOLD}${BOLD}$winnerName", 0, 60, 10)
+        messageAll("<gold><bold>$winnerName</bold> <yellow>is the winner!")
 
         gamePlayers.values.forEach { gp ->
             gp.state = GamePlayer.PlayerState.ENDING
             gp.player.gameMode = GameMode.ADVENTURE
             gp.player.teleport(Location(arena.center.world, arena.center.x, arena.center.y + 2.0, arena.center.z))
-            title.send(gp.player)
+            gp.player.showTitle(
+                Title.title(
+                    "${P}GAME!".mm(),
+                    "<yellow>Winner: <gold><bold>$winnerName".mm(),
+                    Title.Times.times(Duration.ZERO, Duration.ofSeconds(3), Duration.ofMillis(500)),
+                ),
+            )
         }
         // deinit and destroy own instance
         EndGameTask(this).runTaskLater(SmashSumo.plugin, 20 * 6)
@@ -292,26 +324,30 @@ class Game(
             if (lobby == null) {
                 SmashSumo.log(Level.WARNING, "Lobby location not set. Players will not be teleported.")
             }
-            game.gamePlayers.values.forEach { gp ->
+            val gps = game.gamePlayers.values
+            game.gamePlayers.clear()
+            gps.forEach { gp ->
                 gp.player.gameMode = GameMode.SURVIVAL
-                gp.player.setAbsorptionHearts(0f)
+                gp.player.absorptionAmount = 0.0
                 gp.player.health = 20.0
-                gp.player.removePotionEffect(PotionEffectType.JUMP)
+                gp.player.removePotionEffect(PotionEffectType.JUMP_BOOST)
                 if (lobby != null) {
                     gp.player.teleport(Utils.s2l(lobby))
                 }
                 gp.board.delete()
                 gp.player.allowFlight = false
                 gp.player.isFlying = false
+                gp.player.getAttribute(Attribute.ATTACK_SPEED)!!.baseValue = 4.0
+                gp.player.updateCommands()
                 gp.player.scoreboard = Bukkit.getScoreboardManager().mainScoreboard
             }
-            game.gamePlayers.clear()
+
             GameManager.removeGame(game)
         }
     }
 
     fun messageAll(m: String) {
-        gamePlayers.values.forEach { gp -> gp.player.sendMessage(m) }
+        gamePlayers.values.forEach { gp -> gp.player.sendRichMessage(m) }
     }
 
     fun getActivePlayers(): List<GamePlayer> = gamePlayers.values.filter { it.state == GamePlayer.PlayerState.IN_GAME }

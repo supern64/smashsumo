@@ -5,16 +5,15 @@ import dev.dejvokep.boostedyaml.dvs.versioning.BasicVersioning
 import dev.dejvokep.boostedyaml.settings.dumper.DumperSettings
 import dev.dejvokep.boostedyaml.settings.loader.LoaderSettings
 import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import me.cirnoslab.smashsumo.arena.ArenaManager
-import me.cirnoslab.smashsumo.commands.ArenaCommands
-import me.cirnoslab.smashsumo.commands.ConfigCommands
-import me.cirnoslab.smashsumo.commands.GameCommands
+import me.cirnoslab.smashsumo.commands.RootCommand
 import me.cirnoslab.smashsumo.game.HUDManager
 import me.cirnoslab.smashsumo.listeners.GameListener
 import me.cirnoslab.smashsumo.listeners.PlayerMechanicListener
-import org.bukkit.ChatColor
-import org.bukkit.command.Command
-import org.bukkit.command.CommandSender
+import net.kyori.adventure.text.Component.text
+import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextDecoration
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 import java.util.logging.Level
@@ -26,11 +25,15 @@ class SmashSumo : JavaPlugin() {
         server.pluginManager.registerEvents(GameListener(), this)
         HUDManager.SendHUD().runTaskTimer(this, 0L, 5L)
 
+        lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) { commands ->
+            commands.registrar().register(RootCommand.get().build())
+        }
+
         val arenaCount = ArenaManager.init(dataFolder)
         Companion.config =
             YamlDocument.create(
                 File(dataFolder, "config.yml"),
-                getResource("config.yml"),
+                getResource("config.yml")!!,
                 UpdaterSettings.builder().setVersioning(BasicVersioning("version")).build(),
                 LoaderSettings.builder().setAutoUpdate(true).build(),
                 DumperSettings.DEFAULT,
@@ -40,16 +43,6 @@ class SmashSumo : JavaPlugin() {
 
     override fun onDisable() {
         log("Plugin disabled.")
-    }
-
-    override fun onCommand(
-        sender: CommandSender,
-        command: Command,
-        label: String,
-        args: Array<out String>,
-    ): Boolean {
-        if (!command.name.equals("smashsumo", ignoreCase = true)) return false
-        return ArenaCommands.handle(sender, args) || GameCommands.handle(sender, args) || ConfigCommands.handle(sender, args)
     }
 
     companion object {
@@ -67,20 +60,20 @@ class SmashSumo : JavaPlugin() {
         lateinit var plugin: SmashSumo
         lateinit var config: YamlDocument
 
-        val P = "${ChatColor.DARK_AQUA}"
-        val S = "${ChatColor.AQUA}"
+        const val P = "<dark_aqua>"
+        const val S = "<aqua>"
         const val MAX_LIVES = 3
         val playerColor =
             listOf(
-                ChatColor.RED,
-                ChatColor.BLUE,
-                ChatColor.YELLOW,
-                ChatColor.GREEN,
-                ChatColor.AQUA,
-                ChatColor.WHITE,
-                ChatColor.LIGHT_PURPLE,
-                ChatColor.GRAY,
+                NamedTextColor.RED,
+                NamedTextColor.BLUE,
+                NamedTextColor.YELLOW,
+                NamedTextColor.GREEN,
+                NamedTextColor.AQUA,
+                NamedTextColor.WHITE,
+                NamedTextColor.LIGHT_PURPLE,
+                NamedTextColor.GRAY,
             )
-        val SCOREBOARD_LINE: String = "${ChatColor.WHITE}${ChatColor.STRIKETHROUGH}-------------------${ChatColor.RESET}"
+        val SCOREBOARD_LINE = text("                      ").decorate(TextDecoration.STRIKETHROUGH)
     }
 }

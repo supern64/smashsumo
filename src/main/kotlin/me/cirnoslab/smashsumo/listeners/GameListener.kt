@@ -43,7 +43,7 @@ class GameListener : Listener {
         if (e.to.y > e.from.y && !(e.player as Entity).isOnGround) {
             gp.respawnPoint!!
                 .world
-                .getBlockAt(gp.respawnPoint)
+                .getBlockAt(gp.respawnPoint!!)
                 .type = Material.AIR
             gp.respawnPoint = null
         }

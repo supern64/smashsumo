@@ -17,7 +17,7 @@ object ArenaManager {
         arenaF =
             YamlDocument.create(
                 File(dataFolder, "arenas.yml"),
-                SmashSumo.plugin.getResource("arenas.yml"),
+                SmashSumo.plugin.getResource("arenas.yml")!!,
                 UpdaterSettings.builder().setVersioning(BasicVersioning("version")).build(),
                 LoaderSettings.builder().setAutoUpdate(true).build(),
                 DumperSettings.DEFAULT,

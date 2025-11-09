@@ -1,16 +1,21 @@
 package me.cirnoslab.smashsumo.game
 
-import fr.mrmicky.fastboard.FastBoard
+import fr.mrmicky.fastboard.adventure.FastBoard
 import me.cirnoslab.smashsumo.SmashSumo
 import me.cirnoslab.smashsumo.SmashSumo.Companion.P
 import me.cirnoslab.smashsumo.SmashSumo.Companion.S
 import me.cirnoslab.smashsumo.SmashSumo.Companion.SCOREBOARD_LINE
 import me.cirnoslab.smashsumo.Utils
-import org.bukkit.ChatColor.DARK_RED
-import org.bukkit.ChatColor.GRAY
-import org.bukkit.ChatColor.RED
-import org.bukkit.ChatColor.WHITE
-import org.bukkit.ChatColor.YELLOW
+import me.cirnoslab.smashsumo.Utils.mm
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.Component.text
+import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.NamedTextColor.DARK_RED
+import net.kyori.adventure.text.format.NamedTextColor.GRAY
+import net.kyori.adventure.text.format.NamedTextColor.RED
+import net.kyori.adventure.text.format.NamedTextColor.WHITE
+import net.kyori.adventure.text.format.NamedTextColor.YELLOW
+import net.kyori.adventure.text.format.TextColor
 import org.bukkit.Location
 import org.bukkit.entity.Player
 import kotlin.math.sqrt
@@ -27,7 +32,11 @@ class GamePlayer(
     var board = FastBoard(player)
     var respawnPoint: Location? = null
     var waitRespawn = false
-    var doubleJumpPhase = 0
+    var jumpPhase = 0 // jump 1, jump 2, wait for ground
+
+    // last own attack on others
+    var lastHitMomentum = 0.0
+    var lastHitVerticalMultiplier = 0.0
 
     val speed: Double
         get() = sqrt(speedSquared)
@@ -35,35 +44,35 @@ class GamePlayer(
     val displayHealth: Double
         get() = Utils.ntrc(damage, 0.0, 125.0, 20.0, 1.0)
 
-    val lifeString: String
-        get() = "${color}${"⬤".repeat(lives)}${GRAY}${"⬤".repeat(SmashSumo.MAX_LIVES - lives)}"
+    val lifeString: Component
+        get() = text("⬤".repeat(lives), color).append(text("⬤".repeat(SmashSumo.MAX_LIVES - lives), GRAY))
 
     // HUDs are here so they can be modified per player
-    val actionBarDisplay: String
+    val actionBarDisplay: Component
         get() {
             return when (state) {
-                PlayerState.SPECTATING -> "${P}Currently spectating"
-                PlayerState.WAITING -> "${P}Waiting for players... (${S}${game.gamePlayers.count()}$P)"
-                PlayerState.IN_GAME -> "${color}P$playerNumber $P| ${damageColor}${"%.1f".format(damage)}%$P | Lives: ${S}$lives"
-                PlayerState.ENDING -> "${P}Waiting to teleport back..."
-                else -> "You should not see this."
+                PlayerState.SPECTATING -> "${P}Currently spectating".mm()
+                PlayerState.WAITING -> "${P}Waiting for players... (${S}${game.gamePlayers.count()}$P)".mm()
+                PlayerState.IN_GAME -> "${color}P$playerNumber $P| ${damageColor}${"%.1f".format(damage)}%$P | Lives: ${S}$lives".mm()
+                PlayerState.ENDING -> "${P}Waiting to teleport back...".mm()
+                else -> "You should not see this.".mm()
             }
         }
 
-    val scoreboardDisplay: List<String>
+    val scoreboardDisplay: List<Component>
         get() {
             return when (state) {
                 PlayerState.WAITING ->
                     listOf(
                         SCOREBOARD_LINE,
-                        "Waiting for players:",
-                        "${S}${game.gamePlayers.size} ${WHITE}currently waiting",
+                        text("Waiting for players:"),
+                        "${S}${game.gamePlayers.size} <white>currently waiting".mm(),
                         SCOREBOARD_LINE,
                     )
                 PlayerState.ENDING ->
                     listOf(
                         SCOREBOARD_LINE,
-                        "Game ended.",
+                        text("Game ended."),
                         SCOREBOARD_LINE,
                     )
 
@@ -73,15 +82,19 @@ class GamePlayer(
                     val board =
                         mutableListOf(
                             SCOREBOARD_LINE,
-                            "Duration: ${game.formattedTime}",
+                            text("Duration: ${game.formattedTime}"),
                         )
                     for (gp in game.startingPlayers!!) {
                         if (gp.playerNumber == null) continue // joined as spectator, should not be possible
                         if (board.size >= 14) break // 12 players max
                         if (gp.state != PlayerState.IN_GAME) {
-                            board.add("  ${gp.color}P${gp.playerNumber} ${RED}ELIMINATED")
+                            board.add(text("  P${gp.playerNumber}", gp.color).append(text(" ELIMINATED", RED)))
                         } else {
-                            board.add("  ${gp.color}P${gp.playerNumber} ${gp.damageColor}${"%.1f".format(gp.damage)}% ${gp.lifeString}")
+                            board.add(
+                                text("  P${gp.playerNumber}", gp.color)
+                                    .append(text(" %.1f%%".format(gp.damage), gp.damageColor))
+                                    .append(gp.lifeString),
+                            )
                         }
                     }
                     board.add(SCOREBOARD_LINE)
@@ -90,13 +103,13 @@ class GamePlayer(
             }
         }
 
-    val color
+    val color: NamedTextColor
         get() = if (playerNumber != null) SmashSumo.playerColor[(playerNumber!! - 1) % 8] else GRAY
 
-    val damageColor
+    val damageColor: TextColor
         get() =
             when (damage) {
-                in 0.0..35.0 -> S
+                in 0.0..35.0 -> WHITE
                 in 35.001..65.0 -> YELLOW
                 in 65.001..100.0 -> RED
                 else -> DARK_RED

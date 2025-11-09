@@ -1,8 +1,10 @@
 package me.cirnoslab.smashsumo
 
+import me.cirnoslab.smashsumo.SmashSumo.Companion.P
+import me.cirnoslab.smashsumo.SmashSumo.Companion.S
+import me.cirnoslab.smashsumo.arena.Arena
+import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Location
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer
-import org.bukkit.entity.Player
 import kotlin.math.sqrt
 
 object Utils {
@@ -45,7 +47,21 @@ object Utils {
         l2: Location,
     ): Double = sqrt(latDS(l1, l2))
 
-    fun Player.setAbsorptionHearts(ah: Float) {
-        (this as CraftPlayer).handle.absorptionHearts = ah
-    }
+    fun arenaInfo(arena: Arena.Builder) =
+        """${P}Arena Info:
+        |${P}Name: ${S}${arena.name}
+        |${P}Center: ${S}${arena.center.world?.name} (${String.format(
+            "%.2f",
+            arena.center.x,
+        )}, ${String.format("%.2f", arena.center.y)}, ${String.format("%.2f", arena.center.z)})
+        |${P}Spawn Radius: ${S}${String.format("%.2f", arena.spawnRadius)}
+        |${P}Side Barrier Radius: ${S}${String.format("%.2f", arena.sideRadius)}
+        |${P}Respawn Height: ${S}${arena.respawnHeight}
+        |${P}Bottom Barrier: ${S}Y${String.format("%.2f", arena.bottomBarrier)}
+        |${P}Top Barrier: ${if (arena.topBarrier != null) "${S}Y${String.format("%.2f", arena.topBarrier!!)}" else S + "None"}
+        """.trimMargin()
+
+    fun arenaInfo(arena: Arena) = arenaInfo(Arena.Builder(arena))
+
+    fun String.mm() = MiniMessage.miniMessage().deserialize(this)
 }
