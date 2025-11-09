@@ -38,8 +38,13 @@ object ConfigCommands {
                                     .argument("location", ArgumentTypes.finePosition(true))
                                     .executes { ctx ->
                                         val world = ctx.getArgument("world", World::class.java)
-                                        val pResolver = ctx.getArgument("arg", FinePositionResolver::class.java)
-                                        SmashSumo.config.set("lobby", Utils.l2s(pResolver.resolve(ctx.source).toLocation(world)))
+                                        val pResolver = ctx.getArgument("location", FinePositionResolver::class.java)
+                                        val location = pResolver.resolve(ctx.source).toLocation(world)
+                                        SmashSumo.config.set("lobby", Utils.l2s(location))
+                                        ctx.source.executor!!.sendRichMessage(
+                                            "${P}Lobby spawn set to " +
+                                                "${world.name} (${location.blockX}, ${location.blockY}, ${location.blockZ})",
+                                        )
                                         Command.SINGLE_SUCCESS
                                     },
                             ),
