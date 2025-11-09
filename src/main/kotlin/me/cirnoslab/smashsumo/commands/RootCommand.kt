@@ -17,7 +17,7 @@ import org.bukkit.entity.Player
 object RootCommand {
     fun get(): LiteralArgumentBuilder<CommandSourceStack> {
         return Commands
-            .literal("smashsumo")
+            .literal("ss")
             .then(
                 Commands
                     .literal("join")

@@ -2,10 +2,10 @@ name: SmashSumo
 main: me.cirnoslab.smashsumo.SmashSumo
 version: 1.0.0
 author: marukyuu
+api-version: 1.21
 softdepend: [ktlibs-kotlin-stdlib, KotKit, KtLoader]
 commands:
-  smashsumo:
+  ss:
     description: Main command
     usage: /<command> [arena|join|leave|start]
     permission: smashsumo.use
-    aliases: ss
