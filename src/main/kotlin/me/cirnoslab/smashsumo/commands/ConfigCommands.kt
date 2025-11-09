@@ -47,7 +47,7 @@ object ConfigCommands {
                     .executes { ctx ->
                         SmashSumo.config.set("lobby", Utils.l2s(ctx.source.executor!!.location))
                         SmashSumo.config.save()
-                        ctx.source.executor!!.sendMessage("${P}Lobby spawn set to your current location.")
+                        ctx.source.executor!!.sendRichMessage("${P}Lobby spawn set to your current location.")
                         Command.SINGLE_SUCCESS
                     },
             )
