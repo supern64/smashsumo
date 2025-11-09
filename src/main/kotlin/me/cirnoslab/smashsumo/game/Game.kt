@@ -146,7 +146,7 @@ class Game(
 
             health.getScore(gp.player.name).numberFormat(
                 NumberFormat.fixed(
-                    gp.lifeString
+                    gp.lifeComponent
                         .appendSpace()
                         .append(text("%.1f".format(gp.damage), gp.damageColor)),
                 ),
@@ -210,14 +210,14 @@ class Game(
 
         scoreboard.getObjective("percent")?.getScore(gp.player.name)?.numberFormat(
             NumberFormat.fixed(
-                gp.lifeString
+                gp.lifeComponent
                     .appendSpace()
                     .append(text("%.1f".format(gp.damage), gp.damageColor)),
             ),
         )
 
         if (gp.lives == 0) {
-            scoreboard.getTeam("P${gp.playerNumber}")?.suffix(text("[DEAD]", GRAY))
+            scoreboard.getTeam("P${gp.playerNumber}")?.suffix(text(" [DEAD]", GRAY))
             gp.state = GamePlayer.PlayerState.SPECTATING
             if (getActivePlayers().size == 1) {
                 // game end routine
@@ -324,7 +324,7 @@ class Game(
             if (lobby == null) {
                 SmashSumo.log(Level.WARNING, "Lobby location not set. Players will not be teleported.")
             }
-            val gps = game.gamePlayers.values
+            val gps = game.gamePlayers.values.toList()
             game.gamePlayers.clear()
             gps.forEach { gp ->
                 gp.player.gameMode = GameMode.SURVIVAL

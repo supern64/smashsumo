@@ -71,7 +71,7 @@ class PlayerMechanicListener : Listener {
         dGP.player.sendActionBar(dGP.actionBarDisplay)
         dGP.game.scoreboard.getObjective("percent")?.getScore(dGP.player.name)?.numberFormat(
             NumberFormat.fixed(
-                dGP.lifeString
+                dGP.lifeComponent
                     .appendSpace()
                     .append(text("%.1f".format(dGP.damage), dGP.damageColor)),
             ),

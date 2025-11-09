@@ -10,11 +10,8 @@ import me.cirnoslab.smashsumo.Utils.mm
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor
-import net.kyori.adventure.text.format.NamedTextColor.DARK_RED
 import net.kyori.adventure.text.format.NamedTextColor.GRAY
 import net.kyori.adventure.text.format.NamedTextColor.RED
-import net.kyori.adventure.text.format.NamedTextColor.WHITE
-import net.kyori.adventure.text.format.NamedTextColor.YELLOW
 import net.kyori.adventure.text.format.TextColor
 import org.bukkit.Location
 import org.bukkit.entity.Player
@@ -44,8 +41,14 @@ class GamePlayer(
     val displayHealth: Double
         get() = Utils.ntrc(damage, 0.0, 125.0, 20.0, 1.0)
 
-    val lifeString: Component
+    val lifeComponent: Component
         get() = text("⬤".repeat(lives), color).append(text("⬤".repeat(SmashSumo.MAX_LIVES - lives), GRAY))
+
+    val damageColor: TextColor
+        get() = "<transition:white:yellow:red:dark_red:${Utils.ntrc(damage, 0.0, 125.0, 0.0, 1.0)}>".mm().color()!!
+
+    val damageComponent: Component
+        get() = text("%.1f%%".format(damage), damageColor)
 
     // HUDs are here so they can be modified per player
     val actionBarDisplay: Component
@@ -53,7 +56,11 @@ class GamePlayer(
             return when (state) {
                 PlayerState.SPECTATING -> "${P}Currently spectating".mm()
                 PlayerState.WAITING -> "${P}Waiting for players... (${S}${game.gamePlayers.count()}$P)".mm()
-                PlayerState.IN_GAME -> "${color}P$playerNumber $P| ${damageColor}${"%.1f".format(damage)}%$P | Lives: ${S}$lives".mm()
+                PlayerState.IN_GAME ->
+                    text("P$playerNumber", color)
+                        .append(" $P| ".mm())
+                        .append(damageComponent)
+                        .append(" $P| Lives: ${S}$lives".mm())
                 PlayerState.ENDING -> "${P}Waiting to teleport back...".mm()
                 else -> "You should not see this.".mm()
             }
@@ -82,7 +89,7 @@ class GamePlayer(
                     val board =
                         mutableListOf(
                             SCOREBOARD_LINE,
-                            text("Duration: ${game.formattedTime}"),
+                            text("Duration: ").append(game.formattedTime),
                         )
                     for (gp in game.startingPlayers!!) {
                         if (gp.playerNumber == null) continue // joined as spectator, should not be possible
@@ -91,9 +98,10 @@ class GamePlayer(
                             board.add(text("  P${gp.playerNumber}", gp.color).append(text(" ELIMINATED", RED)))
                         } else {
                             board.add(
-                                text("  P${gp.playerNumber}", gp.color)
-                                    .append(text(" %.1f%%".format(gp.damage), gp.damageColor))
-                                    .append(gp.lifeString),
+                                text("  P${gp.playerNumber} ", gp.color)
+                                    .append(gp.damageComponent)
+                                    .appendSpace()
+                                    .append(gp.lifeComponent),
                             )
                         }
                     }
@@ -105,15 +113,6 @@ class GamePlayer(
 
     val color: NamedTextColor
         get() = if (playerNumber != null) SmashSumo.playerColor[(playerNumber!! - 1) % 8] else GRAY
-
-    val damageColor: TextColor
-        get() =
-            when (damage) {
-                in 0.0..35.0 -> WHITE
-                in 35.001..65.0 -> YELLOW
-                in 65.001..100.0 -> RED
-                else -> DARK_RED
-            }
 
     enum class PlayerState {
         WAITING,
