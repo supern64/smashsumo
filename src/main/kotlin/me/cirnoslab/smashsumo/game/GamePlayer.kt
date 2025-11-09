@@ -29,7 +29,7 @@ class GamePlayer(
     var board = FastBoard(player)
     var respawnPoint: Location? = null
     var waitRespawn = false
-    var jumpPhase = 0 // jump 1, jump 2, wait for ground
+    var jumpPhase = 0
 
     // last own attack on others
     var lastHitMomentum = 0.0

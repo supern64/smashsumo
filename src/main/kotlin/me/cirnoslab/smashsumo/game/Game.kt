@@ -156,6 +156,9 @@ class Game(
             gpTeam.prefix(text("[P${gp.playerNumber}] ", gp.color))
             gpTeam.addEntry(gp.player.name)
             gp.player.scoreboard = scoreboard
+
+            gp.jumpPhase = 0
+            gp.player.isFlying = false
         }
         startingPlayers = gamePlayers.values.toList()
         CountdownTask(this).runTaskTimer(SmashSumo.plugin, 0L, 20L)

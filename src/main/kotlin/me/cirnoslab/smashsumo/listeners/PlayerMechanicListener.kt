@@ -152,14 +152,12 @@ class PlayerMechanicListener : Listener {
 
         e.isCancelled = true
         e.player.isFlying = false
-        if (gp.jumpPhase == 2) {
-            e.player.allowFlight = false
-            return
-        }
+        // 0 - 1st double jump, 1 - 2nd double jump, 2 - wait for reset
         e.player.velocity =
             e.player.location.direction
                 .multiply(1.1)
                 .setY(0.95) // 1.5
+        if (gp.jumpPhase == 1) e.player.allowFlight = false
         gp.jumpPhase += 1
     }
 }
