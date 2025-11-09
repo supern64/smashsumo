@@ -145,6 +145,10 @@ class Game(
             gpTeam.suffix = " " + gp.lifeString
             gpTeam.addEntry(gp.player.name)
             gp.player.scoreboard = scoreboard
+
+            gp.jumpPhase = 0
+            gp.player.allowFlight = false
+            gp.player.isFlying = false
         }
         startingPlayers = gamePlayers.values.toList()
         CountdownTask(this).runTaskTimer(SmashSumo.plugin, 0L, 20L)
@@ -167,6 +171,8 @@ class Game(
             for (gp in game.getActivePlayers()) {
                 gp.player.playSound(gp.player.location, Sound.NOTE_PIANO, 1.0f, 1.9f)
                 Title("GO!", "", 0, 15, 5).send(gp.player)
+
+                gp.player.allowFlight = true
             }
             game.startTime = System.currentTimeMillis()
             game.state = GameState.IN_GAME
@@ -231,9 +237,9 @@ class Game(
     ) : BukkitRunnable() {
         override fun run() {
             val rl = gp.respawnPoint ?: return // should never return unless player leaves midgame
-            gp.player.playSound(gp.player.location, Sound.NOTE_PIANO, 1.0f, 1.9f)
             gp.player.gameMode = GameMode.ADVENTURE
             gp.player.teleport(Location(rl.world, rl.blockX + 0.5, rl.blockY + 1.0, rl.blockZ + 0.5, 0f, 90f))
+            gp.player.playSound(rl, Sound.NOTE_PIANO, 1.0f, 1.9f)
             gp.waitRespawn = false
         }
     }

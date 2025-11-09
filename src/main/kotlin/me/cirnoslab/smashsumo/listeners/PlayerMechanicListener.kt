@@ -29,7 +29,7 @@ class PlayerMechanicListener : Listener {
         gp.speedSquared = e.to.distanceSquared(e.from)
 
         // bonus double jump reset
-        if ((e.player as Entity).isOnGround) {
+        if ((e.player as Entity).isOnGround && gp.game.state != Game.GameState.COUNTDOWN) {
             gp.jumpPhase = 0
             gp.player.allowFlight = true
         }
