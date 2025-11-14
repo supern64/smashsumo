@@ -29,7 +29,7 @@ object ConfigCommands {
                 val arenaCount = ArenaManager.reload()
                 Config.reload()
                 s.sendMessage("${P}Configuration reloaded. ${S}$arenaCount ${P}arenas loaded.")
-                if (GameManager.games.isNotEmpty()) s.sendMessage("$P* A game is still ongoing. This may cause funny behavior.")
+                if (GameManager.games.isNotEmpty()) s.sendMessage("$P* Settings will only apply to new games.")
                 return true
             }
             "lobby" -> {

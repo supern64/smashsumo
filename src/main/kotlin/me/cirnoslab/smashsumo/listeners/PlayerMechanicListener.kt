@@ -1,7 +1,6 @@
 package me.cirnoslab.smashsumo.listeners
 
 import io.github.theluca98.textapi.ActionBar
-import me.cirnoslab.smashsumo.Config
 import me.cirnoslab.smashsumo.game.Game
 import me.cirnoslab.smashsumo.game.GameManager
 import me.cirnoslab.smashsumo.game.GamePlayer
@@ -53,7 +52,9 @@ class PlayerMechanicListener : Listener {
             return
         }
 
-        if (aGP.game.arena.name != dGP.game.arena.name) return
+        val game = aGP.game
+
+        if (game.arena.name != game.arena.name) return
         if (aGP.state != GamePlayer.PlayerState.IN_GAME || dGP.state != GamePlayer.PlayerState.IN_GAME) {
             e.isCancelled = true
             return
@@ -70,15 +71,30 @@ class PlayerMechanicListener : Listener {
         e.isCancelled = true
         d.damage(0.0)
         d.health = dGP.displayHealth
+        val kbSetting = game.settings.knockback
         val dKnockback =
             a.location.direction
                 .normalize()
-                .setY(if ((d as Entity).isOnGround) 0.5 else 0.5 * sign(a.location.direction.y))
-                .multiply(Vector(dGP.damage / 30.0, dGP.damage / 40.0, dGP.damage / 30.0)) // cumulative damage
-                .multiply(Vector(aMomentum + 1, (aVertMultiplier + 1) * 0.9, aMomentum + 1)) // current attack
+                .setY(if ((d as Entity).isOnGround) kbSetting.initialY else kbSetting.initialY * sign(a.location.direction.y))
+                // cumulative damage
+                .multiply(
+                    Vector(
+                        dGP.damage * kbSetting.xzDamageMultiplier,
+                        dGP.damage * kbSetting.yDamageMultiplier,
+                        dGP.damage * kbSetting.xzDamageMultiplier,
+                    ),
+                )
+                // current attack
+                .multiply(
+                    Vector(
+                        (aMomentum + 1) * kbSetting.xzMomentumMultiplier,
+                        (aVertMultiplier + 1) * kbSetting.yMomentumMultiplier,
+                        (aMomentum + 1) * kbSetting.xzMomentumMultiplier,
+                    ),
+                )
 
-        if (dKnockback.lengthSquared() < 1.9) {
-            dKnockback.normalize().multiply(1.1)
+        if (dKnockback.lengthSquared() < kbSetting.minimumSize * kbSetting.minimumSize) {
+            dKnockback.normalize().multiply(kbSetting.minimumSize)
         }
         d.velocity = dKnockback
 
@@ -120,15 +136,15 @@ class PlayerMechanicListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onPlayerPlaceBlock(e: BlockPlaceEvent) {
-        if (!GameManager.isPlayerInGame(e.player)) return
-        if (Config.Game.allowBlock) return
+        val game = GameManager.getGame(e.player) ?: return
+        if (game.settings.allowBlock) return
         e.isCancelled = true
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onPlayerPlaceBlock(e: BlockBreakEvent) {
-        if (!GameManager.isPlayerInGame(e.player)) return
-        if (Config.Game.allowBlock) return
+        val game = GameManager.getGame(e.player) ?: return
+        if (game.settings.allowBlock) return
         e.isCancelled = true
     }
 

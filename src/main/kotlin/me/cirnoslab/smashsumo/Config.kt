@@ -5,6 +5,7 @@ import dev.dejvokep.boostedyaml.dvs.versioning.BasicVersioning
 import dev.dejvokep.boostedyaml.settings.dumper.DumperSettings
 import dev.dejvokep.boostedyaml.settings.loader.LoaderSettings
 import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings
+import me.cirnoslab.smashsumo.game.KnockbackConfig
 import org.bukkit.ChatColor
 import org.bukkit.Location
 import org.bukkit.plugin.java.JavaPlugin
@@ -59,6 +60,16 @@ object Config {
             get() = (config.getLong("game.respawn-time", 1000) / 50).coerceAtLeast(2)
         val platformDespawnTime: Long
             get() = config.getLong("game.platform-despawn-time", 3000) / 50
+        val knockback: KnockbackConfig
+            get() =
+                KnockbackConfig(
+                    config.getDouble("game.knockback.initial-y", 0.5),
+                    config.getDouble("game.knockback.minimum-size", 1.1),
+                    config.getDouble("game.knockback.xz-damage-multiplier", 0.033),
+                    config.getDouble("game.knockback.y-damage-multiplier", 0.025),
+                    config.getDouble("game.knockback.xz-momentum-multiplier", 1.0),
+                    config.getDouble("game.knockback.y-momentum-multiplier", 0.9),
+                )
     }
 
     object Style {

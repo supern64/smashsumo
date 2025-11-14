@@ -22,12 +22,30 @@ game:
   respawn-time: 1000
   # How long it should take for the respawn platform to automatically despawn (multiple of 50ms, default: 3000)
   platform-despawn-time: 3000
+  # Knockback settings
+  knockback:
+    # Base vertical knockback (default: 0.5)
+    initial-y: 0.5
+    # Minimum knockback size (default: 1.1)
+    minimum-size: 1.1
+    # Horizontal damage knockback multiplier (default: 0.033)
+    xz-damage-multiplier: 0.033
+    # Vertical damage knockback multiplier (default: 0.025)
+    y-damage-multiplier: 0.025
+    # Horizontal momentum knockback multiplier (default: 1)
+    xz-momentum-multiplier: 1
+    # Vertical momentum knockback multiplier (default: 0.9)
+    y-momentum-multiplier: 0.9
 
-# Styling options (legacy color, see https://helpch.at/docs/1.8.8/org/bukkit/ChatColor.html)
+
+# Styling options (legacy color - case-sensitive, see https://helpch.at/docs/1.8.8/org/bukkit/ChatColor.html)
 style:
+  # Primary color (default: DARK_AQUA)
   primary-color: DARK_AQUA
+  # Secondary color (default: AQUA)
   secondary-color: AQUA
   # Team colors (specify any number of them and they'll be used in rotation)
+  # (default: RED, BLUE, YELLOW, GREEN, AQUA, WHITE, LIGHT_PURPLE, GRAY)
   team-colors:
     - RED
     - BLUE

@@ -32,6 +32,7 @@ import java.util.logging.Level
 class Game(
     // game state is tied to arena state
     val arena: Arena,
+    val settings: GameSettings,
 ) {
     val gamePlayers = mutableMapOf<UUID, GamePlayer>()
     var startingPlayers: List<GamePlayer>? = null
@@ -51,7 +52,7 @@ class Game(
         if (gamePlayers.containsKey(p.uniqueId)) return GameJoinResult.ALREADY_IN_GAME
         if (state == GameState.ENDING) return GameJoinResult.GAME_ENDING
 
-        val gp = GamePlayer(this, p, null, Config.Game.lives)
+        val gp = GamePlayer(this, p, null, settings.lives)
         gamePlayers[p.uniqueId] = gp
 
         gp.board.updateTitle("${P}${BOLD}Smash Sumo")
@@ -211,12 +212,12 @@ class Game(
             gp.respawnPoint = respawnLocation
             gp.waitRespawn = true
             // respawn routine
-            RespawnSetupTask(this, gp).runTaskLater(SmashSumo.plugin, Config.Game.respawnTime - 2)
-            PlayerRespawnTask(gp).runTaskLater(SmashSumo.plugin, Config.Game.respawnTime)
+            RespawnSetupTask(this, gp).runTaskLater(SmashSumo.plugin, settings.respawnTime - 2)
+            PlayerRespawnTask(gp).runTaskLater(SmashSumo.plugin, settings.respawnTime)
             RespawnPlatformExpireTask(this, gp).runTaskTimer(
                 SmashSumo.plugin,
-                Config.Game.respawnTime + Config.Game.platformDespawnTime / 4,
-                Config.Game.platformDespawnTime / 4,
+                settings.respawnTime + settings.platformDespawnTime / 4,
+                settings.platformDespawnTime / 4,
             )
         }
     }

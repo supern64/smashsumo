@@ -1,5 +1,6 @@
 package me.cirnoslab.smashsumo.game
 
+import me.cirnoslab.smashsumo.Config
 import me.cirnoslab.smashsumo.arena.Arena
 import org.bukkit.entity.Player
 
@@ -30,7 +31,17 @@ object GameManager {
     }
 
     fun initGame(arena: Arena): Game {
-        val game = Game(arena)
+        val game =
+            Game(
+                arena,
+                GameSettings(
+                    Config.Game.lives,
+                    Config.Game.allowBlock,
+                    Config.Game.respawnTime,
+                    Config.Game.platformDespawnTime,
+                    Config.Game.knockback,
+                ),
+            )
         games.add(game)
         return game
     }

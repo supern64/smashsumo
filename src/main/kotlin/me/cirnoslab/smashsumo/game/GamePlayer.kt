@@ -1,7 +1,6 @@
 package me.cirnoslab.smashsumo.game
 
 import fr.mrmicky.fastboard.FastBoard
-import me.cirnoslab.smashsumo.Config
 import me.cirnoslab.smashsumo.Config.Style.P
 import me.cirnoslab.smashsumo.Config.Style.S
 import me.cirnoslab.smashsumo.Config.Style.teamColors
@@ -37,7 +36,7 @@ class GamePlayer(
         get() = Utils.ntrc(damage, 0.0, 125.0, 20.0, 1.0)
 
     val lifeString: String
-        get() = "${color}${"⬤".repeat(lives)}${GRAY}${"⬤".repeat(Config.Game.lives - lives)}"
+        get() = "${color}${"⬤".repeat(lives)}${GRAY}${"⬤".repeat(game.settings.lives - lives)}"
 
     // HUDs are here so they can be modified per player
     val actionBarDisplay: String
