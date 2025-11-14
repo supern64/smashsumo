@@ -4,6 +4,7 @@ import me.cirnoslab.smashsumo.Config
 import me.cirnoslab.smashsumo.Config.Style.P
 import me.cirnoslab.smashsumo.Config.Style.S
 import me.cirnoslab.smashsumo.arena.ArenaManager
+import me.cirnoslab.smashsumo.game.GameManager
 import org.bukkit.command.CommandSender
 
 object ConfigCommands {
@@ -28,6 +29,7 @@ object ConfigCommands {
                 val arenaCount = ArenaManager.reload()
                 Config.reload()
                 s.sendMessage("${P}Configuration reloaded. ${S}$arenaCount ${P}arenas loaded.")
+                if (GameManager.games.isNotEmpty()) s.sendMessage("${P}* A game is still ongoing. This may cause funny behavior.")
                 return true
             }
             "lobby" -> {
