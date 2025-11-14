@@ -7,4 +7,5 @@ data class KnockbackConfig(
     val yDamageMultiplier: Double,
     val xzMomentumMultiplier: Double,
     val yMomentumMultiplier: Double,
+    val noDamageTicks: Int,
 )

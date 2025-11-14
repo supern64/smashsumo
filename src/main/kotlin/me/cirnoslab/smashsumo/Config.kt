@@ -69,6 +69,7 @@ object Config {
                     config.getDouble("game.knockback.y-damage-multiplier", 0.025),
                     config.getDouble("game.knockback.xz-momentum-multiplier", 1.0),
                     config.getDouble("game.knockback.y-momentum-multiplier", 0.9),
+                    config.getInt("game.knockback.no-damage-ticks", 8),
                 )
     }
 

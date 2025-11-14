@@ -34,6 +34,8 @@ game:
     xz-momentum-multiplier: 1
     # Vertical momentum knockback multiplier (default: 0.9)
     y-momentum-multiplier: 0.9
+    # Number of ticks required between hits (default: 8)
+    no-damage-ticks: 8
 
 
 # Styling options (legacy color - case-sensitive, see https://helpch.at/docs/1.8.8/org/bukkit/ChatColor.html)

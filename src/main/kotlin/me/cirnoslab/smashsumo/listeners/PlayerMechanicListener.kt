@@ -53,6 +53,7 @@ class PlayerMechanicListener : Listener {
         }
 
         val game = aGP.game
+        val kbSetting = game.settings.knockback
 
         if (game.arena.name != game.arena.name) return
         if (aGP.state != GamePlayer.PlayerState.IN_GAME || dGP.state != GamePlayer.PlayerState.IN_GAME) {
@@ -65,13 +66,18 @@ class PlayerMechanicListener : Listener {
             return
         }
 
+        if (d.noDamageTicks > 0) {
+            e.isCancelled = true
+            return
+        }
+
         val aVertMultiplier = -a.velocity.y.coerceAtMost(0.0)
         val aMomentum = aGP.speed
         dGP.damage += Random.nextDouble(2.0, 3.0) + aMomentum * Random.nextDouble(10.0, 15.0)
         e.isCancelled = true
         d.damage(0.0)
+        d.noDamageTicks = kbSetting.noDamageTicks
         d.health = dGP.displayHealth
-        val kbSetting = game.settings.knockback
         val dKnockback =
             a.location.direction
                 .normalize()
