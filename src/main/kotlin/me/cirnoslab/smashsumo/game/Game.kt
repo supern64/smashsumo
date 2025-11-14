@@ -213,9 +213,10 @@ class Game(
             // respawn routine
             RespawnSetupTask(this, gp).runTaskLater(SmashSumo.plugin, Config.Game.respawnTime - 2)
             PlayerRespawnTask(gp).runTaskLater(SmashSumo.plugin, Config.Game.respawnTime)
-            RespawnPlatformExpireTask(this, gp).runTaskTimer(SmashSumo.plugin,
+            RespawnPlatformExpireTask(this, gp).runTaskTimer(
+                SmashSumo.plugin,
                 Config.Game.respawnTime + Config.Game.platformDespawnTime / 4,
-                Config.Game.platformDespawnTime / 4
+                Config.Game.platformDespawnTime / 4,
             )
         }
     }

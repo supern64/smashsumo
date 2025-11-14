@@ -33,7 +33,9 @@ object GameCommands {
                     return true
                 }
 
-                if (Config.forceEmptyInventory && (s.inventory.contents.any { a -> a != null } || s.inventory.armorContents.any { a -> a != null })) {
+                if (Config.forceEmptyInventory &&
+                    (s.inventory.contents.any { a -> a != null } || s.inventory.armorContents.any { a -> a != null })
+                ) {
                     s.sendMessage("${P}You must get rid of all of your items and armor before entering the game.")
                     return true
                 }
