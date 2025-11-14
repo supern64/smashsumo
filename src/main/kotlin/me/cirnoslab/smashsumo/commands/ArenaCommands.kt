@@ -6,9 +6,10 @@ import me.cirnoslab.smashsumo.Utils
 import me.cirnoslab.smashsumo.arena.Arena
 import me.cirnoslab.smashsumo.arena.ArenaManager
 import org.bukkit.command.CommandSender
+import java.util.UUID
 
 object ArenaCommands {
-    private var selectedArena: Arena.Builder? = null
+    private var selectedArena: MutableMap<UUID, Arena.Builder> = mutableMapOf()
 
     fun handle(
         s: CommandSender,
@@ -42,7 +43,7 @@ object ArenaCommands {
                     s.sendMessage("${P}Arena ${S}$arenaName ${P}does not exist.")
                     return true
                 }
-                selectedArena = Arena.Builder(ArenaManager.arenas[arenaName]!!)
+                selectedArena[s.uniqueId] = Arena.Builder(ArenaManager.arenas[arenaName]!!)
                 s.sendMessage("${P}Arena ${S}$arenaName ${P}selected.")
             }
             "create" -> {
@@ -60,90 +61,90 @@ object ArenaCommands {
                         name = arenaName,
                         center = s.location,
                     )
-                selectedArena = arena
+                selectedArena[s.uniqueId] = arena
                 s.sendMessage("${P}Arena ${S}$arenaName ${P}created and selected.")
             }
             "center" -> {
-                if (selectedArena == null) {
+                if (selectedArena[s.uniqueId] == null) {
                     s.sendMessage("${P}No arena selected.")
                     return true
                 }
-                selectedArena!!.center = s.location
-                s.sendMessage("${P}Arena ${S}${selectedArena!!.name}'s ${P}center has been set at your current location.")
+                selectedArena[s.uniqueId]!!.center = s.location
+                s.sendMessage("${P}Arena ${S}${selectedArena[s.uniqueId]!!.name}'s ${P}center has been set at your current location.")
             }
             "spawn" -> {
-                if (selectedArena == null) {
+                if (selectedArena[s.uniqueId] == null) {
                     s.sendMessage("${P}No arena selected.")
                     return true
                 }
-                selectedArena!!.spawnRadius = Utils.latD(selectedArena!!.center, s.location)
+                selectedArena[s.uniqueId]!!.spawnRadius = Utils.latD(selectedArena[s.uniqueId]!!.center, s.location)
                 s.sendMessage(
-                    "${P}Arena ${S}${selectedArena!!.name}'s ${P}spawn radius has been set to ${S}${String.format(
+                    "${P}Arena ${S}${selectedArena[s.uniqueId]!!.name}'s ${P}spawn radius has been set to ${S}${String.format(
                         "%.2f",
-                        selectedArena!!.spawnRadius,
+                        selectedArena[s.uniqueId]!!.spawnRadius,
                     )}$P.",
                 )
             }
             "side" -> {
-                if (selectedArena == null) {
+                if (selectedArena[s.uniqueId] == null) {
                     s.sendMessage("${P}No arena selected.")
                     return true
                 }
-                selectedArena!!.sideRadius = Utils.latD(selectedArena!!.center, s.location)
+                selectedArena[s.uniqueId]!!.sideRadius = Utils.latD(selectedArena[s.uniqueId]!!.center, s.location)
                 s.sendMessage(
-                    "${P}Arena ${S}${selectedArena!!.name}'s ${P}side barrier radius has been set to ${S}${String.format(
+                    "${P}Arena ${S}${selectedArena[s.uniqueId]!!.name}'s ${P}side barrier radius has been set to ${S}${String.format(
                         "%.2f",
-                        selectedArena!!.sideRadius,
+                        selectedArena[s.uniqueId]!!.sideRadius,
                     )}$P.",
                 )
             }
             "bottom" -> {
-                if (selectedArena == null) {
+                if (selectedArena[s.uniqueId] == null) {
                     s.sendMessage("${P}No arena selected.")
                     return true
                 }
-                selectedArena!!.bottomBarrier = s.location.y
+                selectedArena[s.uniqueId]!!.bottomBarrier = s.location.y
                 s.sendMessage(
-                    "${P}Arena ${S}${selectedArena!!.name}'s ${P}bottom barrier has been set to Y${S}${String.format(
+                    "${P}Arena ${S}${selectedArena[s.uniqueId]!!.name}'s ${P}bottom barrier has been set to Y${S}${String.format(
                         "%.2f",
-                        selectedArena!!.bottomBarrier,
+                        selectedArena[s.uniqueId]!!.bottomBarrier,
                     )}$P.",
                 )
             }
             "top" -> {
-                if (selectedArena == null) {
+                if (selectedArena[s.uniqueId] == null) {
                     s.sendMessage("${P}No arena selected.")
                     return true
                 }
-                selectedArena!!.topBarrier = s.location.y
+                selectedArena[s.uniqueId]!!.topBarrier = s.location.y
                 s.sendMessage(
-                    "${P}Arena ${S}${selectedArena!!.name}'s ${P}top barrier has been set to Y${S}${String.format(
+                    "${P}Arena ${S}${selectedArena[s.uniqueId]!!.name}'s ${P}top barrier has been set to Y${S}${String.format(
                         "%.2f",
-                        selectedArena!!.topBarrier!!,
+                        selectedArena[s.uniqueId]!!.topBarrier!!,
                     )}$P.",
                 )
             }
             "respawn" -> {
-                if (selectedArena == null) {
+                if (selectedArena[s.uniqueId] == null) {
                     s.sendMessage("${P}No arena selected.")
                     return true
                 }
-                selectedArena!!.respawnHeight = s.location.blockY
+                selectedArena[s.uniqueId]!!.respawnHeight = s.location.blockY
                 s.sendMessage(
-                    "${P}Arena ${S}${selectedArena!!.name}'s ${P}respawn height has been set to Y${S}${selectedArena!!.respawnHeight}$P.",
+                    "${P}Arena ${S}${selectedArena[s.uniqueId]!!.name}'s ${P}respawn height has been set to Y${S}${selectedArena[s.uniqueId]!!.respawnHeight}$P.",
                 )
             }
             "save" -> {
-                if (selectedArena == null) {
+                if (selectedArena[s.uniqueId] == null) {
                     s.sendMessage("${P}No arena selected.")
                     return true
                 }
-                val arenaCheck = selectedArena!!.checkArena()
+                val arenaCheck = selectedArena[s.uniqueId]!!.checkArena()
                 if (!arenaCheck.isEmpty()) {
                     s.sendMessage("${P}Invalid arena.${S}\n${arenaCheck.joinToString("\n") { a -> a.description }}}")
                     return true
                 }
-                ArenaManager.arenas[selectedArena!!.name] = selectedArena!!.build()
+                ArenaManager.arenas[selectedArena[s.uniqueId]!!.name] = selectedArena[s.uniqueId]!!.build()
                 ArenaManager.saveArenas()
                 s.sendMessage("${P}Arenas saved.")
             }
@@ -157,11 +158,11 @@ object ArenaCommands {
                     }
                     arena = Arena.Builder(ArenaManager.arenas[arenaName]!!)
                 } else {
-                    if (selectedArena == null) {
+                    if (selectedArena[s.uniqueId] == null) {
                         s.sendMessage("${P}No arena selected. (Or specify arena name)")
                         return true
                     }
-                    arena = selectedArena!!
+                    arena = selectedArena[s.uniqueId]!!
                 }
 
                 s.sendMessage(
