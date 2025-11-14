@@ -33,9 +33,9 @@ class Arena(
             val x = center.x + spawnRadius * cos(angle)
             val z = center.z + spawnRadius * sin(angle)
             val y = center.y
-            var yawAngle = Math.toDegrees(angle) + 180
-            while (yawAngle < -180) yawAngle += 360
-            while (yawAngle > 180) yawAngle -= 360
+            // 90 - Math.toDegrees(angle) + 360
+            var yawAngle = (450 - Math.toDegrees(angle)) % 360
+            if (yawAngle > 180) yawAngle -= 360
             locations.add(Location(center.world, x, y, z, yawAngle.toFloat(), 0f))
         }
         return locations
