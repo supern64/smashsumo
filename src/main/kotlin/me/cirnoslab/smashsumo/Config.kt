@@ -55,6 +55,10 @@ object Config {
             get() = config.getInt("game.lives", 3)
         val allowBlock: Boolean
             get() = config.getBoolean("game.allow-block", false)
+        val respawnTime: Long
+            get() = (config.getLong("game.respawn-time", 1000) / 50).coerceAtLeast(2)
+        val platformDespawnTime: Long
+            get() = config.getLong("game.platform-despawn-time", 3000) / 50
     }
 
     object Style {

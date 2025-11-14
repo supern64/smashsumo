@@ -18,6 +18,10 @@ game:
   # Whether to allow placing and breaking blocks (default: false)
   # Arena restoring is not supported
   allow-block: false
+  # How long it should take for the player to respawn (multiple of 50msm, minimum: 100, default: 1000)
+  respawn-time: 1000
+  # How long it should take for the respawn platform to automatically despawn (multiple of 50ms, default: 3000)
+  platform-despawn-time: 3000
 
 # Styling options (legacy color, see https://helpch.at/docs/1.8.8/org/bukkit/ChatColor.html)
 style:
