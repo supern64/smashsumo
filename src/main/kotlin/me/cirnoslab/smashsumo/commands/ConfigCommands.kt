@@ -1,9 +1,8 @@
 package me.cirnoslab.smashsumo.commands
 
-import me.cirnoslab.smashsumo.SmashSumo
-import me.cirnoslab.smashsumo.SmashSumo.Companion.P
-import me.cirnoslab.smashsumo.SmashSumo.Companion.S
-import me.cirnoslab.smashsumo.Utils
+import me.cirnoslab.smashsumo.Config
+import me.cirnoslab.smashsumo.Config.Style.P
+import me.cirnoslab.smashsumo.Config.Style.S
 import me.cirnoslab.smashsumo.arena.ArenaManager
 import org.bukkit.command.CommandSender
 
@@ -26,9 +25,9 @@ object ConfigCommands {
 
         when (args[1].lowercase()) {
             "reload" -> {
-                ArenaManager.reload()
-                SmashSumo.config.reload()
-                s.sendMessage("${P}Configuration reloaded.")
+                val arenaCount = ArenaManager.reload()
+                Config.reload()
+                s.sendMessage("${P}Configuration reloaded. ${S}$arenaCount ${P}arenas loaded.")
                 return true
             }
             "lobby" -> {
@@ -36,8 +35,8 @@ object ConfigCommands {
                     s.sendMessage("${P}Only players can set the lobby spawn.")
                     return true
                 }
-                SmashSumo.config.set("lobby", Utils.l2s(s.location))
-                SmashSumo.config.save()
+                Config.lobbyPosition = s.location
+                Config.save()
                 s.sendMessage("${P}Lobby spawn set to your current location.")
                 return true
             }

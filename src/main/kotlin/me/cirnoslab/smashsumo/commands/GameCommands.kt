@@ -1,7 +1,8 @@
 package me.cirnoslab.smashsumo.commands
 
-import me.cirnoslab.smashsumo.SmashSumo.Companion.P
-import me.cirnoslab.smashsumo.SmashSumo.Companion.S
+import me.cirnoslab.smashsumo.Config
+import me.cirnoslab.smashsumo.Config.Style.P
+import me.cirnoslab.smashsumo.Config.Style.S
 import me.cirnoslab.smashsumo.arena.ArenaManager
 import me.cirnoslab.smashsumo.game.Game
 import me.cirnoslab.smashsumo.game.GameManager
@@ -31,6 +32,12 @@ object GameCommands {
                     s.sendMessage("${P}Arena ${S}${args[1]} ${P}does not exist.")
                     return true
                 }
+
+                if (Config.forceEmptyInventory && s.inventory.size > 0) {
+                    s.sendMessage("${P}You must get rid of all of your items before entering the game.")
+                    return true
+                }
+
                 val success = GameManager.join(s, arena)
                 when (success) {
                     GameManager.GameJoinResult.SUCCESS -> {}

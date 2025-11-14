@@ -1,7 +1,7 @@
 package me.cirnoslab.smashsumo.commands
 
-import me.cirnoslab.smashsumo.SmashSumo.Companion.P
-import me.cirnoslab.smashsumo.SmashSumo.Companion.S
+import me.cirnoslab.smashsumo.Config.Style.P
+import me.cirnoslab.smashsumo.Config.Style.S
 import me.cirnoslab.smashsumo.Utils
 import me.cirnoslab.smashsumo.arena.Arena
 import me.cirnoslab.smashsumo.arena.ArenaManager
@@ -176,7 +176,7 @@ object ArenaCommands {
                     |${P}Side Barrier Radius: ${S}${String.format("%.2f", arena.sideRadius)}
                     |${P}Respawn Height: ${S}${arena.respawnHeight}
                     |${P}Bottom Barrier: ${S}Y${String.format("%.2f", arena.bottomBarrier)}
-                    |${P}Top Barrier: ${if (arena.topBarrier != null) "${S}Y${String.format("%.2f", arena.topBarrier!!)}" else S + "None"}
+                    |${P}Top Barrier: ${if (arena.topBarrier != null) "${S}Y${String.format("%.2f", arena.topBarrier!!)}" else "${S}None"}
                     """.trimMargin(),
                 )
             }

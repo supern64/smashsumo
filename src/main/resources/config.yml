@@ -1,2 +1,35 @@
-version: 1
+# SmashSumo configuration
+# marukyuu, 14/11/2025
+
+# Versioning number, do not change
+version: 2
+
+# Lobby location (player is teleported to after game ends)
+# You can set this in-game by typing /ss config lobby
 lobby:
+
+# Whether to force an empty inventory before being able to join a game (default: false)
+force-empty-inventory: false
+
+# Game Options
+game:
+  # The number of lives a person has (default: 3)
+  lives: 3
+  # Whether to allow placing and breaking blocks (default: false)
+  # Arena restoring is not supported
+  allow-block: false
+
+# Styling options (legacy color, see https://helpch.at/docs/1.8.8/org/bukkit/ChatColor.html)
+style:
+  primary-color: DARK_AQUA
+  secondary-color: AQUA
+  # Team colors (specify any number of them and they'll be used in rotation)
+  team-colors:
+    - RED
+    - BLUE
+    - YELLOW
+    - GREEN
+    - AQUA
+    - WHITE
+    - LIGHT_PURPLE
+    - GRAY

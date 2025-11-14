@@ -1,10 +1,10 @@
 package me.cirnoslab.smashsumo.game
 
 import io.github.theluca98.textapi.Title
+import me.cirnoslab.smashsumo.Config
+import me.cirnoslab.smashsumo.Config.Style.P
+import me.cirnoslab.smashsumo.Config.Style.S
 import me.cirnoslab.smashsumo.SmashSumo
-import me.cirnoslab.smashsumo.SmashSumo.Companion.P
-import me.cirnoslab.smashsumo.SmashSumo.Companion.S
-import me.cirnoslab.smashsumo.Utils
 import me.cirnoslab.smashsumo.Utils.setAbsorptionHearts
 import me.cirnoslab.smashsumo.arena.Arena
 import me.cirnoslab.smashsumo.game.GameManager.GameJoinResult
@@ -51,7 +51,7 @@ class Game(
         if (gamePlayers.containsKey(p.uniqueId)) return GameJoinResult.ALREADY_IN_GAME
         if (state == GameState.ENDING) return GameJoinResult.GAME_ENDING
 
-        val gp = GamePlayer(this, p, null, SmashSumo.MAX_LIVES)
+        val gp = GamePlayer(this, p, null, Config.Game.lives)
         gamePlayers[p.uniqueId] = gp
 
         gp.board.updateTitle("${P}${BOLD}Smash Sumo")
@@ -113,11 +113,11 @@ class Game(
         p.allowFlight = false
         p.isFlying = false
 
-        val lobby = SmashSumo.config.getString("lobby")
+        val lobby = Config.lobbyPosition
         if (lobby == null) {
             SmashSumo.log(Level.WARNING, "Lobby location not set. Player will not be teleported.")
         } else {
-            p.teleport(Utils.s2l(lobby))
+            p.teleport(lobby)
         }
 
         if (startingPlayers == null || startingPlayers!!.contains(gp)) messageAll("${S}${p.name} ${P}has left the game!")
@@ -294,7 +294,7 @@ class Game(
     ) : BukkitRunnable() {
         override fun run() {
             game.arena.state = Arena.ArenaState.AVAILABLE
-            val lobby = SmashSumo.config.getString("lobby")
+            val lobby = Config.lobbyPosition
             if (lobby == null) {
                 SmashSumo.log(Level.WARNING, "Lobby location not set. Players will not be teleported.")
             }
@@ -304,7 +304,7 @@ class Game(
                 gp.player.health = 20.0
                 gp.player.removePotionEffect(PotionEffectType.JUMP)
                 if (lobby != null) {
-                    gp.player.teleport(Utils.s2l(lobby))
+                    gp.player.teleport(lobby)
                 }
                 gp.board.delete()
                 gp.player.allowFlight = false

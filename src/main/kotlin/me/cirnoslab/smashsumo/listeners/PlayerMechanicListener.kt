@@ -1,6 +1,7 @@
 package me.cirnoslab.smashsumo.listeners
 
 import io.github.theluca98.textapi.ActionBar
+import me.cirnoslab.smashsumo.Config
 import me.cirnoslab.smashsumo.game.Game
 import me.cirnoslab.smashsumo.game.GameManager
 import me.cirnoslab.smashsumo.game.GamePlayer
@@ -10,6 +11,8 @@ import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
+import org.bukkit.event.block.BlockBreakEvent
+import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.EntityRegainHealthEvent
@@ -65,7 +68,7 @@ class PlayerMechanicListener : Listener {
         val aMomentum = aGP.speed
         dGP.damage += Random.nextDouble(2.0, 3.0) + aMomentum * Random.nextDouble(10.0, 15.0)
         e.isCancelled = true
-        d.damage(d.health - dGP.displayHealth)
+        d.damage(0.0)
         d.health = dGP.displayHealth
         val dKnockback =
             a.location.direction
@@ -112,6 +115,20 @@ class PlayerMechanicListener : Listener {
         val player = e.entity as Player
         if (!GameManager.isPlayerInGame(player)) return
 
+        e.isCancelled = true
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    fun onPlayerPlaceBlock(e: BlockPlaceEvent) {
+        if (!GameManager.isPlayerInGame(e.player)) return
+        if (Config.Game.allowBlock) return
+        e.isCancelled = true
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    fun onPlayerPlaceBlock(e: BlockBreakEvent) {
+        if (!GameManager.isPlayerInGame(e.player)) return
+        if (Config.Game.allowBlock) return
         e.isCancelled = true
     }
 

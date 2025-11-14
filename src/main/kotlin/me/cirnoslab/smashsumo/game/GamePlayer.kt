@@ -1,9 +1,10 @@
 package me.cirnoslab.smashsumo.game
 
 import fr.mrmicky.fastboard.FastBoard
-import me.cirnoslab.smashsumo.SmashSumo
-import me.cirnoslab.smashsumo.SmashSumo.Companion.P
-import me.cirnoslab.smashsumo.SmashSumo.Companion.S
+import me.cirnoslab.smashsumo.Config
+import me.cirnoslab.smashsumo.Config.Style.P
+import me.cirnoslab.smashsumo.Config.Style.S
+import me.cirnoslab.smashsumo.Config.Style.teamColors
 import me.cirnoslab.smashsumo.SmashSumo.Companion.SCOREBOARD_LINE
 import me.cirnoslab.smashsumo.Utils
 import org.bukkit.ChatColor.DARK_RED
@@ -36,7 +37,7 @@ class GamePlayer(
         get() = Utils.ntrc(damage, 0.0, 125.0, 20.0, 1.0)
 
     val lifeString: String
-        get() = "${color}${"⬤".repeat(lives)}${GRAY}${"⬤".repeat(SmashSumo.MAX_LIVES - lives)}"
+        get() = "${color}${"⬤".repeat(lives)}${GRAY}${"⬤".repeat(Config.Game.lives - lives)}"
 
     // HUDs are here so they can be modified per player
     val actionBarDisplay: String
@@ -91,7 +92,7 @@ class GamePlayer(
         }
 
     val color
-        get() = if (playerNumber != null) SmashSumo.playerColor[(playerNumber!! - 1) % 8] else GRAY
+        get() = if (playerNumber != null) teamColors[(playerNumber!! - 1) % teamColors.size] else GRAY
 
     val damageColor
         get() =
