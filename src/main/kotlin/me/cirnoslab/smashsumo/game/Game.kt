@@ -101,19 +101,7 @@ class Game(
             }
         }
 
-        scoreboard.getTeam("P${gp.playerNumber}")?.unregister()
-        p.scoreboard = Bukkit.getScoreboardManager().mainScoreboard
-
-        gp.board.delete()
-
-        gamePlayers.remove(p.uniqueId)
-        p.gameMode = GameMode.SURVIVAL
-        p.setAbsorptionHearts(0f)
-        p.removePotionEffect(PotionEffectType.JUMP)
-
-        p.allowFlight = false
-        p.isFlying = false
-
+        deinitPlayer(gp)
         val lobby = Config.lobbyPosition
         if (lobby == null) {
             SmashSumo.log(Level.WARNING, "Lobby location not set. Player will not be teleported.")
@@ -304,17 +292,10 @@ class Game(
                 SmashSumo.log(Level.WARNING, "Lobby location not set. Players will not be teleported.")
             }
             game.gamePlayers.values.forEach { gp ->
-                gp.player.gameMode = GameMode.SURVIVAL
-                gp.player.setAbsorptionHearts(0f)
-                gp.player.health = 20.0
-                gp.player.removePotionEffect(PotionEffectType.JUMP)
+                deinitPlayer(gp)
                 if (lobby != null) {
                     gp.player.teleport(lobby)
                 }
-                gp.board.delete()
-                gp.player.allowFlight = false
-                gp.player.isFlying = false
-                gp.player.scoreboard = Bukkit.getScoreboardManager().mainScoreboard
             }
             game.gamePlayers.clear()
             GameManager.removeGame(game)
@@ -334,5 +315,18 @@ class Game(
         COUNTDOWN,
         IN_GAME,
         ENDING,
+    }
+
+    companion object {
+        fun deinitPlayer(gp: GamePlayer) {
+            gp.player.gameMode = GameMode.SURVIVAL
+            gp.player.setAbsorptionHearts(0f)
+            gp.player.health = 20.0
+            gp.player.removePotionEffect(PotionEffectType.JUMP)
+            gp.board.delete()
+            gp.player.allowFlight = false
+            gp.player.isFlying = false
+            gp.player.scoreboard = Bukkit.getScoreboardManager().mainScoreboard
+        }
     }
 }
