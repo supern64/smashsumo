@@ -3,7 +3,7 @@ package me.cirnoslab.smashsumo
 import me.cirnoslab.smashsumo.arena.ArenaManager
 import me.cirnoslab.smashsumo.commands.ArenaCommands
 import me.cirnoslab.smashsumo.commands.ConfigCommands
-import me.cirnoslab.smashsumo.commands.GameCommands
+import me.cirnoslab.smashsumo.commands.RootCommands
 import me.cirnoslab.smashsumo.game.Game
 import me.cirnoslab.smashsumo.game.GameManager
 import me.cirnoslab.smashsumo.game.HUDManager
@@ -43,8 +43,20 @@ class SmashSumo : JavaPlugin() {
         label: String,
         args: Array<out String>,
     ): Boolean {
-        if (!command.name.equals("smashsumo", ignoreCase = true)) return false
-        return ArenaCommands.handle(sender, args) || GameCommands.handle(sender, args) || ConfigCommands.handle(sender, args)
+        if (!command.name.equals("smashsumo", ignoreCase = true)) return false // shouldn't be possible
+        return ArenaCommands.handle(sender, args) || ConfigCommands.handle(sender, args) || RootCommands.handle(sender, args)
+    }
+
+    override fun onTabComplete(
+        sender: CommandSender,
+        command: Command,
+        alias: String,
+        args: Array<out String>,
+    ): List<String> {
+        if (!command.name.equals("smashsumo", ignoreCase = true)) return listOf() // shouldn't be possible
+        if (ArenaCommands.canComplete(sender, args)) return ArenaCommands.complete(sender, args)
+        if (ConfigCommands.canComplete(sender, args)) return ConfigCommands.complete(sender, args)
+        return RootCommands.complete(sender, args)
     }
 
     companion object {

@@ -3,6 +3,7 @@ package me.cirnoslab.smashsumo.commands
 import me.cirnoslab.smashsumo.Config
 import me.cirnoslab.smashsumo.Config.Style.P
 import me.cirnoslab.smashsumo.Config.Style.S
+import me.cirnoslab.smashsumo.Utils
 import me.cirnoslab.smashsumo.arena.ArenaManager
 import me.cirnoslab.smashsumo.game.GameManager
 import org.bukkit.command.CommandSender
@@ -48,4 +49,21 @@ object ConfigCommands {
             }
         }
     }
+
+    fun complete(
+        s: CommandSender,
+        args: Array<out String>,
+    ): List<String> {
+        val completions =
+            when (args.size) {
+                2 -> listOf("lobby", "reload")
+                else -> listOf()
+            }
+        return completions.sortedByDescending { a -> Utils.matchPrefixCount(a, args[args.size - 1]) }
+    }
+
+    fun canComplete(
+        s: CommandSender,
+        args: Array<out String>,
+    ): Boolean = args.isNotEmpty() && args[0].lowercase() == "config"
 }

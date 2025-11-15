@@ -49,4 +49,21 @@ object Utils {
     fun Player.setAbsorptionHearts(ah: Float) {
         (this as CraftPlayer).handle.absorptionHearts = ah
     }
+
+    fun matchPrefixCount(
+        s1: String,
+        s2: String,
+    ): Int {
+        var count = 0
+        val minLength = minOf(s1.length, s2.length)
+
+        for (i in 0 until minLength) {
+            if (s1[i] == s2[i]) {
+                count++
+            } else {
+                break
+            }
+        }
+        return count
+    }
 }

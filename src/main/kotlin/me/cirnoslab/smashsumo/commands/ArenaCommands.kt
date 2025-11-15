@@ -6,6 +6,7 @@ import me.cirnoslab.smashsumo.Utils
 import me.cirnoslab.smashsumo.arena.Arena
 import me.cirnoslab.smashsumo.arena.ArenaManager
 import org.bukkit.command.CommandSender
+import org.bukkit.entity.Player
 import java.util.UUID
 
 object ArenaCommands {
@@ -17,7 +18,7 @@ object ArenaCommands {
     ): Boolean {
         if (args.isEmpty() || args[0].lowercase() != "arena") return false
 
-        if (s !is org.bukkit.entity.Player) {
+        if (s !is Player) {
             s.sendMessage("${P}Only players can use arena commands.")
             return true
         }
@@ -184,9 +185,37 @@ object ArenaCommands {
                 s.sendMessage("${P}Available arenas: ${S}${ArenaManager.arenas.keys.joinToString(", ")}")
             }
             else -> {
-                s.sendMessage("${P}Unknown subcommand. Usage: $S/smashsumo arena [select|list]")
+                s.sendMessage(
+                    "${P}Unknown subcommand. Usage: $S/smashsumo arena [select|list|create|save|center|spawn|respawn|side|bottom|top|info]",
+                )
             }
         }
         return true
     }
+
+    fun complete(
+        s: CommandSender,
+        args: Array<out String>,
+    ): List<String> {
+        val completions =
+            when (args.size) {
+                2 -> {
+                    if (s is Player && selectedArena.containsKey(s.uniqueId)) {
+                        listOf("select", "list", "create", "save", "center", "spawn", "respawn", "side", "bottom", "top", "info")
+                    } else {
+                        listOf("select", "list", "create", "info")
+                    }
+                }
+                3 -> {
+                    if (arrayOf("select", "list", "info").contains(args[1].lowercase())) ArenaManager.arenas.keys.toList() else listOf()
+                }
+                else -> listOf()
+            }
+        return completions.sortedByDescending { a -> Utils.matchPrefixCount(a, args[args.size - 1]) }
+    }
+
+    fun canComplete(
+        s: CommandSender,
+        args: Array<out String>,
+    ): Boolean = args.isNotEmpty() && args[0].lowercase() == "arena"
 }

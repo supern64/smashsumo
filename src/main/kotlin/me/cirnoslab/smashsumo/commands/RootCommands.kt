@@ -3,19 +3,21 @@ package me.cirnoslab.smashsumo.commands
 import me.cirnoslab.smashsumo.Config
 import me.cirnoslab.smashsumo.Config.Style.P
 import me.cirnoslab.smashsumo.Config.Style.S
+import me.cirnoslab.smashsumo.Utils
 import me.cirnoslab.smashsumo.arena.ArenaManager
 import me.cirnoslab.smashsumo.game.Game
 import me.cirnoslab.smashsumo.game.GameManager
 import org.bukkit.command.CommandSender
+import org.bukkit.entity.Player
 
-object GameCommands {
+object RootCommands {
     fun handle(
         s: CommandSender,
         args: Array<out String>,
     ): Boolean {
         if (args.isEmpty() || !listOf("join", "leave", "start").contains(args[0].lowercase())) return false
 
-        if (s !is org.bukkit.entity.Player) {
+        if (s !is Player) {
             s.sendMessage("${P}Only players can use game commands.")
             return true
         }
@@ -87,5 +89,32 @@ object GameCommands {
             }
             else -> return false
         }
+    }
+
+    fun complete(
+        s: CommandSender,
+        args: Array<out String>,
+    ): List<String> {
+        val completions =
+            when (args.size) {
+                1 -> {
+                    if (s !is Player) return listOf()
+                    val validCommands = mutableListOf<String>()
+                    if (GameManager.isPlayerInGame(s)) {
+                        validCommands.addAll(listOf("leave", "start"))
+                    } else {
+                        validCommands.add("join")
+                    }
+                    if (s.hasPermission("smashsumo.admin")) {
+                        validCommands.addAll(listOf("config", "arena"))
+                    }
+                    validCommands
+                }
+                2 -> {
+                    if (args[0] == "join") ArenaManager.arenas.keys.toList() else listOf()
+                }
+                else -> listOf()
+            }
+        return completions.sortedByDescending { a -> Utils.matchPrefixCount(a, args[args.size - 1]) }
     }
 }
