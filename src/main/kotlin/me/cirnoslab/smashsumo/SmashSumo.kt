@@ -4,6 +4,8 @@ import me.cirnoslab.smashsumo.arena.ArenaManager
 import me.cirnoslab.smashsumo.commands.ArenaCommands
 import me.cirnoslab.smashsumo.commands.ConfigCommands
 import me.cirnoslab.smashsumo.commands.GameCommands
+import me.cirnoslab.smashsumo.game.Game
+import me.cirnoslab.smashsumo.game.GameManager
 import me.cirnoslab.smashsumo.game.HUDManager
 import me.cirnoslab.smashsumo.listeners.GameListener
 import me.cirnoslab.smashsumo.listeners.PlayerMechanicListener
@@ -26,6 +28,12 @@ class SmashSumo : JavaPlugin() {
     }
 
     override fun onDisable() {
+        GameManager.games.forEach { game ->
+            game.gamePlayers.values.forEach { gp ->
+                Game.deinitPlayer(gp)
+            }
+        }
+        GameManager.games.clear()
         log("Plugin disabled.")
     }
 
