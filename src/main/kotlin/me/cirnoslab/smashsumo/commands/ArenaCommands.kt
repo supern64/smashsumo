@@ -214,8 +214,5 @@ object ArenaCommands {
         return completions.sortedByDescending { a -> Utils.matchPrefixCount(a, args[args.size - 1]) }
     }
 
-    fun canComplete(
-        s: CommandSender,
-        args: Array<out String>,
-    ): Boolean = args.isNotEmpty() && args[0].lowercase() == "arena"
+    fun canComplete(args: Array<out String>): Boolean = args.isNotEmpty() && args[0].lowercase() == "arena"
 }

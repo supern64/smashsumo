@@ -54,8 +54,8 @@ class SmashSumo : JavaPlugin() {
         args: Array<out String>,
     ): List<String> {
         if (!command.name.equals("smashsumo", ignoreCase = true)) return listOf() // shouldn't be possible
-        if (ArenaCommands.canComplete(sender, args)) return ArenaCommands.complete(sender, args)
-        if (ConfigCommands.canComplete(sender, args)) return ConfigCommands.complete(sender, args)
+        if (ArenaCommands.canComplete(args)) return ArenaCommands.complete(sender, args)
+        if (ConfigCommands.canComplete(args)) return ConfigCommands.complete(args)
         return RootCommands.complete(sender, args)
     }
 

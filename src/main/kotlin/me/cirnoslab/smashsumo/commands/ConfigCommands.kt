@@ -50,10 +50,7 @@ object ConfigCommands {
         }
     }
 
-    fun complete(
-        s: CommandSender,
-        args: Array<out String>,
-    ): List<String> {
+    fun complete(args: Array<out String>): List<String> {
         val completions =
             when (args.size) {
                 2 -> listOf("lobby", "reload")
@@ -62,8 +59,5 @@ object ConfigCommands {
         return completions.sortedByDescending { a -> Utils.matchPrefixCount(a, args[args.size - 1]) }
     }
 
-    fun canComplete(
-        s: CommandSender,
-        args: Array<out String>,
-    ): Boolean = args.isNotEmpty() && args[0].lowercase() == "config"
+    fun canComplete(args: Array<out String>): Boolean = args.isNotEmpty() && args[0].lowercase() == "config"
 }
