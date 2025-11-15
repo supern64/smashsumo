@@ -67,7 +67,7 @@ class Game(
         p.gameMode = GameMode.ADVENTURE
         p.health = 20.0
         p.foodLevel = 20
-        p.setAbsorptionHearts(6f)
+        p.setAbsorptionHearts(settings.lives * 2f)
 
         // double jump setup
         p.allowFlight = true
@@ -102,6 +102,7 @@ class Game(
         }
 
         deinitPlayer(gp)
+        gamePlayers.remove(p.uniqueId)
         val lobby = Config.lobbyPosition
         if (lobby == null) {
             SmashSumo.log(Level.WARNING, "Lobby location not set. Player will not be teleported.")
