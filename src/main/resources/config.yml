@@ -1,6 +1,6 @@
 # SmashSumo configuration
 # Versioning number, do not change
-version: 2
+version: 100
 
 # !! If any settings here are invalid, they will be set to their default options !!
 

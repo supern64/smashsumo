@@ -1,7 +1,7 @@
 name: SmashSumo
 main: me.cirnoslab.smashsumo.SmashSumo
 version: 1.0.0
-author: marukyuu
+author: SuperN64
 softdepend: [ktlibs-kotlin-stdlib, KotKit, KtLoader]
 commands:
   smashsumo:
