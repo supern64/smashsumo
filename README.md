@@ -9,7 +9,8 @@ Available from the [Releases](https://github.com/supern64/smashsumo/releases) se
 > A version compatible with the latest version can be found in the `modern` branch, but updates are not guaranteed.
 
 ## Usage
-After downloading, put the JAR in the `plugins` folder of your server.  
+You must install [ktlibs-kotlin-stdlib](https://modrinth.com/plugin/ktlibs-kotlin-stdlib) first.  
+After downloading this plugin and `ktlibs`, put both JARs in the `plugins` folder of your server.  
 
 Build an arena, and register it by
 1. Stand at the center of your arena.
