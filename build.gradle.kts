@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "me.cirnoslab"
-version = "1.0-SNAPSHOT"
+version = "1.0.0-SNAPSHOT"
 
 repositories {
     flatDir {
