@@ -7,6 +7,7 @@ import dev.dejvokep.boostedyaml.settings.loader.LoaderSettings
 import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings
 import me.cirnoslab.smashsumo.game.KnockbackConfig
 import org.bukkit.ChatColor
+import org.bukkit.GameMode
 import org.bukkit.Location
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
@@ -47,6 +48,14 @@ object Config {
                 config.set("lobby", Utils.l2s(v))
             }
         }
+
+    val lobbyGameMode: GameMode
+        get() =
+            try {
+                GameMode.valueOf(config.getString("lobby-gamemode", "ADVENTURE"))
+            } catch (_: IllegalArgumentException) {
+                GameMode.ADVENTURE
+            }
 
     val forceEmptyInventory: Boolean
         get() = config.getBoolean("force-empty-inventory", false)

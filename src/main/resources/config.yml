@@ -2,10 +2,13 @@
 # Versioning number, do not change
 version: 2
 
+# !! If any settings here are invalid, they will be set to their default options !!
+
 # Lobby location (player is teleported to after game ends)
 # You can set this in-game by typing /ss config lobby
 lobby:
-
+# What gamemode to switch players to after leaving a game (CREATIVE, SURVIVAL, ADVENTURE, SPECTATOR; default: ADVENTURE)
+lobby-gamemode: ADVENTURE
 # Whether to force an empty inventory before being able to join a game (default: false)
 force-empty-inventory: false
 

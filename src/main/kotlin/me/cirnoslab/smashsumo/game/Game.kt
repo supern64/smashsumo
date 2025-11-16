@@ -320,7 +320,6 @@ class Game(
 
     companion object {
         fun deinitPlayer(gp: GamePlayer) {
-            gp.player.gameMode = GameMode.SURVIVAL
             gp.player.setAbsorptionHearts(0f)
             gp.player.health = 20.0
             gp.player.removePotionEffect(PotionEffectType.JUMP)
@@ -328,6 +327,7 @@ class Game(
             gp.player.allowFlight = false
             gp.player.isFlying = false
             gp.player.scoreboard = Bukkit.getScoreboardManager().mainScoreboard
+            gp.player.gameMode = Config.lobbyGameMode
         }
     }
 }
