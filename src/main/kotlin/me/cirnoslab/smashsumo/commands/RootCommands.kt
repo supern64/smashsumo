@@ -4,6 +4,7 @@ import me.cirnoslab.smashsumo.Config
 import me.cirnoslab.smashsumo.Config.Style.P
 import me.cirnoslab.smashsumo.Config.Style.S
 import me.cirnoslab.smashsumo.Utils
+import me.cirnoslab.smashsumo.arena.Arena
 import me.cirnoslab.smashsumo.arena.ArenaManager
 import me.cirnoslab.smashsumo.game.Game
 import me.cirnoslab.smashsumo.game.GameManager
@@ -27,21 +28,27 @@ object RootCommands {
 
         when (args[0].lowercase()) {
             "join" -> {
+                if (Config.forceEmptyInventory &&
+                    (s.inventory.contents.any { a -> a != null } || s.inventory.armorContents.any { a -> a != null })
+                ) {
+                    s.sendMessage("${P}You must get rid of all of your items and armor before entering the game.")
+                    return true
+                }
+
                 if (args.size < 2) {
-                    s.sendMessage("${P}Usage: $S/smashsumo join [arena]")
+                    val arena =
+                        ArenaManager.arenas.values
+                            .filter { e -> e.state != Arena.ArenaState.PLAYING }
+                            .maxByOrNull { e ->
+                                if (e.state == Arena.ArenaState.WAITING) GameManager.getGame(e)!!.gamePlayers.size else 0
+                            }!!
+                    GameManager.join(s, arena)
                     return true
                 }
 
                 val arena = ArenaManager.arenas[args[1]]
                 if (arena == null) {
                     s.sendMessage("${P}Arena ${S}${args[1]} ${P}does not exist.")
-                    return true
-                }
-
-                if (Config.forceEmptyInventory &&
-                    (s.inventory.contents.any { a -> a != null } || s.inventory.armorContents.any { a -> a != null })
-                ) {
-                    s.sendMessage("${P}You must get rid of all of your items and armor before entering the game.")
                     return true
                 }
 
