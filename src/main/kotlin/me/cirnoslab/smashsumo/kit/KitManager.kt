@@ -54,24 +54,13 @@ object KitManager {
      * @return the number of arenas loaded
      */
     fun loadKitList(): Int {
-        kits.clear()
-        kitF.getMapList("kits").forEach { map ->
-            TODO("not implemented")
-        }
-        return kits.size
+        TODO("not implemented")
     }
 
     /**
      * Saves the internal storage to disk.
      */
     fun saveKits() {
-        val kitList = mutableListOf<Map<String, Any>>()
-        kits.values.forEach { arena ->
-            val map = mutableMapOf<String, Any>()
-            kitList.add(map)
-            TODO("not implemented")
-        }
-        kitF.set("arenas", kitList)
-        kitF.save()
+        TODO("not implemented")
     }
 }
