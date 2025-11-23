@@ -1,5 +1,7 @@
 package me.cirnoslab.smashsumo.game
 
+import me.cirnoslab.smashsumo.kit.Kit
+
 /**
  * Game settings
 */
@@ -24,4 +26,8 @@ data class GameSettings(
      * The [KnockbackConfig] used for the game
      */
     val knockback: KnockbackConfig,
+    /**
+     * The [Kit] that is given out to everyone when the game starts
+     */
+    val defaultKit: Kit?,
 )

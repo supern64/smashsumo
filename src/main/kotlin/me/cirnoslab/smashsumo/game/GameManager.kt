@@ -67,6 +67,7 @@ object GameManager {
                     Config.Game.respawnTime,
                     Config.Game.platformDespawnTime,
                     Config.Game.knockback,
+                    Config.Game.defaultKit,
                 ),
             )
         games.add(game)

@@ -6,6 +6,7 @@ import me.cirnoslab.smashsumo.Config.Style.S
 import me.cirnoslab.smashsumo.Config.Style.teamColors
 import me.cirnoslab.smashsumo.SmashSumo.Companion.SCOREBOARD_LINE
 import me.cirnoslab.smashsumo.Utils
+import me.cirnoslab.smashsumo.kit.Kit
 import org.bukkit.ChatColor.DARK_RED
 import org.bukkit.ChatColor.GRAY
 import org.bukkit.ChatColor.RED
@@ -22,12 +23,14 @@ import kotlin.math.sqrt
  * @property player the Player this GamePlayer is for
  * @property playerNumber the player order (see [Game.initStart])
  * @property lives the number of lives that this player has
+ * @property kit the [Kit] this player will have at the start of the game
  */
 class GamePlayer(
     val game: Game,
     val player: Player,
     var playerNumber: Int? = null,
     var lives: Int,
+    val kit: Kit? = null,
 ) {
     /**
      * The current state of this player

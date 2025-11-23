@@ -9,6 +9,7 @@ import me.cirnoslab.smashsumo.game.Game
 import me.cirnoslab.smashsumo.game.GameManager
 import me.cirnoslab.smashsumo.game.HUDManager
 import me.cirnoslab.smashsumo.item.ItemManager
+import me.cirnoslab.smashsumo.kit.KitManager
 import me.cirnoslab.smashsumo.listeners.GameListener
 import me.cirnoslab.smashsumo.listeners.ItemListener
 import me.cirnoslab.smashsumo.listeners.PlayerMechanicListener
@@ -29,10 +30,11 @@ class SmashSumo : JavaPlugin() {
         server.pluginManager.registerEvents(ItemListener(), this)
         HUDManager.SendHUD().runTaskTimer(this, 0L, 5L)
 
-        Config.init(this)
         val arenaCount = ArenaManager.init(dataFolder)
         ItemManager.init(this)
-        log("Plugin enabled. Loaded config and $arenaCount arenas.")
+        val kitCount = KitManager.init(dataFolder)
+        Config.init(this)
+        log("Plugin enabled. Loaded config with $arenaCount arenas and $kitCount kits.")
     }
 
     override fun onDisable() {

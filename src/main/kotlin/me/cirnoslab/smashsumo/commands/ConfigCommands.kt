@@ -6,6 +6,7 @@ import me.cirnoslab.smashsumo.Config.Style.S
 import me.cirnoslab.smashsumo.Utils
 import me.cirnoslab.smashsumo.arena.ArenaManager
 import me.cirnoslab.smashsumo.game.GameManager
+import me.cirnoslab.smashsumo.kit.KitManager
 import org.bukkit.command.CommandSender
 
 /**
@@ -31,8 +32,9 @@ object ConfigCommands {
         when (args[1].lowercase()) {
             "reload" -> {
                 val arenaCount = ArenaManager.reload()
+                val kitCount = KitManager.reload()
                 Config.reload()
-                s.sendMessage("${P}Configuration reloaded. ${S}$arenaCount ${P}arenas loaded.")
+                s.sendMessage("${P}Configuration reloaded. ${S}$arenaCount ${P}arenas and $kitCount kits loaded.")
                 if (GameManager.games.isNotEmpty()) s.sendMessage("$P* Settings will only apply to new games.")
                 return true
             }

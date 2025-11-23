@@ -91,7 +91,7 @@ class Game(
         if (gamePlayers.containsKey(p.uniqueId)) return GameJoinResult.ALREADY_IN_GAME
         if (state == GameState.ENDING) return GameJoinResult.GAME_ENDING
 
-        val gp = GamePlayer(this, p, null, settings.lives)
+        val gp = GamePlayer(this, p, null, settings.lives, settings.defaultKit)
         gamePlayers[p.uniqueId] = gp
 
         gp.board.updateTitle("${P}${BOLD}Smash Sumo")
@@ -113,6 +113,7 @@ class Game(
         p.isFlying = false
 
         p.addPotionEffect(PotionEffect(PotionEffectType.JUMP, Int.MAX_VALUE, 1))
+        p.inventory.clear()
         p.teleport(Location(arena.center.world, arena.center.x, arena.center.y + 2.0, arena.center.z))
 
         messageAll("${S}${p.name} ${P}has joined the game!")
@@ -191,6 +192,8 @@ class Game(
             gp.jumpPhase = 0
             gp.player.allowFlight = false
             gp.player.isFlying = false
+
+            gp.kit?.apply(gp.player)
         }
         startingPlayers = gamePlayers.values.toList()
         CountdownTask(this).runTaskTimer(SmashSumo.plugin, 0L, 20L)
@@ -257,6 +260,7 @@ class Game(
                 endGame()
             } else {
                 gp.player.gameMode = GameMode.SPECTATOR
+                gp.player.inventory.clear()
                 gp.player.sendMessage("${RED}You have been eliminated! You are now a spectator.")
             }
         } else {
@@ -313,6 +317,7 @@ class Game(
         override fun run() {
             val rl = gp.respawnPoint ?: return // should never return unless player leaves midgame
             gp.player.gameMode = GameMode.ADVENTURE
+            gp.kit?.replenish(gp.player)
             gp.player.teleport(Location(rl.world, rl.blockX + 0.5, rl.blockY + 1.0, rl.blockZ + 0.5, 0f, 90f))
             gp.player.playSound(rl, Sound.NOTE_PIANO, 1.0f, 1.9f)
             gp.waitRespawn = false
@@ -374,6 +379,7 @@ class Game(
         gamePlayers.values.forEach { gp ->
             gp.state = GamePlayer.PlayerState.ENDING
             gp.player.gameMode = GameMode.ADVENTURE
+            gp.player.inventory.clear()
             gp.player.teleport(Location(arena.center.world, arena.center.x, arena.center.y + 2.0, arena.center.z))
             title.send(gp.player)
         }
@@ -455,6 +461,7 @@ class Game(
             gp.player.isFlying = false
             gp.player.scoreboard = Bukkit.getScoreboardManager().mainScoreboard
             gp.player.gameMode = Config.lobbyGameMode
+            gp.player.inventory.clear()
         }
     }
 }
