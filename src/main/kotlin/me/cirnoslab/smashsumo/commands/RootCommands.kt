@@ -111,6 +111,9 @@ object RootCommands {
                     if (s.hasPermission("smashsumo.admin")) {
                         validCommands.addAll(listOf("config", "arena"))
                     }
+                    if (s.hasPermission("smashsumo.debug")) {
+                        validCommands.add("debug")
+                    }
                     validCommands
                 }
                 2 -> {

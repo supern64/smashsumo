@@ -5,6 +5,10 @@ import me.cirnoslab.smashsumo.game.Game
 import me.cirnoslab.smashsumo.game.GameManager
 import me.cirnoslab.smashsumo.game.GamePlayer
 import me.cirnoslab.smashsumo.game.GameSettings
+import me.cirnoslab.smashsumo.game.HitValue
+import me.cirnoslab.smashsumo.item.ItemManager
+import me.cirnoslab.smashsumo.item.events.ItemArmorEvent
+import me.cirnoslab.smashsumo.item.events.ItemHitPlayerEvent
 import org.bukkit.GameMode
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
@@ -66,7 +70,6 @@ class PlayerMechanicListener : Listener {
         }
 
         val game = aGP.game
-        val kbSetting = game.settings.knockback
 
         if (game.arena.name != game.arena.name) return
         if (aGP.state != GamePlayer.PlayerState.IN_GAME || dGP.state != GamePlayer.PlayerState.IN_GAME) {
@@ -84,36 +87,50 @@ class PlayerMechanicListener : Listener {
             return
         }
 
+        // initial damage calculation
         val aVertMultiplier = -a.velocity.y.coerceAtMost(0.0)
         val aMomentum = aGP.speed
-        dGP.damage += Random.nextDouble(2.0, 3.0) + aMomentum * Random.nextDouble(10.0, 15.0)
+        val initialDamage = Random.nextDouble(2.0, 3.0) + aMomentum * Random.nextDouble(10.0, 15.0)
+        val hitValue = HitValue(game.settings.knockback, initialDamage)
+
+        // process items
+        val aItem = ItemManager.getItem(a.itemInHand)
+        aItem?.hit(ItemHitPlayerEvent(aGP, a, dGP, d, hitValue, e))
+
+        d.inventory.armorContents.forEach { i ->
+            val dItem = ItemManager.getItem(i)
+            dItem?.damage(ItemArmorEvent(aGP, a, dGP, d, hitValue, e))
+        }
+
+        dGP.damage += hitValue.damage
+
         e.isCancelled = true
         d.damage(0.0)
-        d.noDamageTicks = kbSetting.noDamageTicks
+        d.noDamageTicks = hitValue.noDamageTicks
         d.health = dGP.displayHealth
         val dKnockback =
             a.location.direction
                 .normalize()
-                .setY(if ((d as Entity).isOnGround) kbSetting.initialY else kbSetting.initialY * sign(a.location.direction.y))
+                .setY(if ((d as Entity).isOnGround) hitValue.initialY else hitValue.initialY * sign(a.location.direction.y))
                 // cumulative damage
                 .multiply(
                     Vector(
-                        dGP.damage * kbSetting.xzDamageMultiplier,
-                        dGP.damage * kbSetting.yDamageMultiplier,
-                        dGP.damage * kbSetting.xzDamageMultiplier,
+                        dGP.damage * hitValue.xzDamageMultiplier,
+                        dGP.damage * hitValue.yDamageMultiplier,
+                        dGP.damage * hitValue.xzDamageMultiplier,
                     ),
                 )
                 // current attack
                 .multiply(
                     Vector(
-                        (aMomentum + 1) * kbSetting.xzMomentumMultiplier,
-                        (aVertMultiplier + 1) * kbSetting.yMomentumMultiplier,
-                        (aMomentum + 1) * kbSetting.xzMomentumMultiplier,
+                        (aMomentum + 1) * hitValue.xzMomentumMultiplier,
+                        (aVertMultiplier + 1) * hitValue.yMomentumMultiplier,
+                        (aMomentum + 1) * hitValue.xzMomentumMultiplier,
                     ),
                 )
 
-        if (dKnockback.lengthSquared() < kbSetting.minimumSize * kbSetting.minimumSize) {
-            dKnockback.normalize().multiply(kbSetting.minimumSize)
+        if (dKnockback.lengthSquared() < hitValue.minimumSize * hitValue.minimumSize) {
+            dKnockback.normalize().multiply(hitValue.minimumSize)
         }
         d.velocity = dKnockback
 

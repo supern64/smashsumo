@@ -94,12 +94,13 @@ class GamePlayer(
     val lifeString: String
         get() = "${color}${"⬤".repeat(lives)}${GRAY}${"⬤".repeat(game.settings.lives - lives)}"
 
+    // HUDs are here so they can be modified per player
+
     /**
      * The display string for the player's action bar
      *
      * @see HUDManager
      */
-    // HUDs are here so they can be modified per player
     val actionBarDisplay: String
         get() {
             return when (state) {
@@ -178,29 +179,14 @@ class GamePlayer(
      * Represents player state
      */
     enum class PlayerState {
-        /**
-         * Waiting for game to begin
-         */
         WAITING,
-
-        /**
-         * Currently playing
-         */
         IN_GAME,
-
-        /**
-         * Currently spectating
-         */
         SPECTATING,
 
         /**
          * Does not exist (left midgame)
          */
         GHOST,
-
-        /**
-         * Waiting for game to end
-         */
         ENDING,
     }
 }

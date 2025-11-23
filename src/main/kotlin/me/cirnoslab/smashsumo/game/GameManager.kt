@@ -131,36 +131,18 @@ object GameManager {
      * Represents the result of joining a game
      */
     enum class GameJoinResult {
-        /**
-         * Successfully joined
-         */
         SUCCESS,
-
-        /**
-         * Player is already in another game
-         */
         ALREADY_IN_GAME,
 
         /**
          * The game the player is trying to join has already started (joined as spectator)
          */
         GAME_STARTED,
-
-        /**
-         * The game the player is trying to join is ending
-         */
         GAME_ENDING,
     }
 
     enum class GameLeaveResult {
-        /**
-         * Successfully left
-         */
         SUCCESS,
-
-        /**
-         * Player isn't in a game
-         */
         NOT_IN_GAME,
     }
 }

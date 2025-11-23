@@ -434,24 +434,9 @@ class Game(
      * Represents states of a game
      */
     enum class GameState {
-        /**
-         * Waiting for players to join
-         */
         WAITING,
-
-        /**
-         * Counting down to start
-         */
         COUNTDOWN,
-
-        /**
-         * In game
-         */
         IN_GAME,
-
-        /**
-         * Waiting for game to end
-         */
         ENDING,
     }
 

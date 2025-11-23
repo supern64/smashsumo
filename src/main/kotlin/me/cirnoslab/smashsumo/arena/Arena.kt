@@ -34,7 +34,7 @@ class Arena(
      * Checks if [location] is within the valid bounds of the Arena.
      *
      * @param location the [Location] to check
-     * @return whether the location is within the arena
+     * @return true if location is within arena, false otherwise
      */
     fun inArena(location: Location): Boolean {
         if (location.world != center.world) return false
@@ -160,19 +160,8 @@ class Arena(
      * The state of an arena
      */
     enum class ArenaState {
-        /**
-         * Arena is ready for use
-         */
         AVAILABLE,
-
-        /**
-         * Arena is waiting for a game to begin or end
-         */
         WAITING,
-
-        /**
-         * Arena is in use
-         */
         PLAYING,
     }
 
