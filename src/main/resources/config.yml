@@ -1,6 +1,6 @@
 # SmashSumo configuration
 # Versioning number, do not change
-version: 100
+version: 110
 
 # !! If any settings here are invalid, they will be set to their default options !!
 
@@ -9,8 +9,9 @@ version: 100
 lobby:
 # What gamemode to switch players to after leaving a game (CREATIVE, SURVIVAL, ADVENTURE, SPECTATOR; default: ADVENTURE)
 lobby-gamemode: ADVENTURE
-# Whether to force an empty inventory before being able to join a game (default: false)
-force-empty-inventory: false
+# Whether to force an empty inventory before being able to join a game (default: true)
+# The game will clear your inventories regardless if this is enabled or not, hence it is enabled by default
+force-empty-inventory: true
 
 # Game Options
 game:
@@ -23,6 +24,8 @@ game:
   respawn-time: 1000
   # How long it should take for the respawn platform to automatically despawn (multiple of 50ms, default: 3000)
   platform-despawn-time: 3000
+  # The name of the kit all players will have by default, if this is null no kit will be given (default: null)
+  default-kit: null
   # Knockback settings
   knockback:
     # Base vertical knockback (default: 0.5)
