@@ -5,7 +5,6 @@ import dev.dejvokep.boostedyaml.dvs.versioning.BasicVersioning
 import dev.dejvokep.boostedyaml.settings.dumper.DumperSettings
 import dev.dejvokep.boostedyaml.settings.loader.LoaderSettings
 import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings
-import me.cirnoslab.smashsumo.game.GameSettings
 import me.cirnoslab.smashsumo.game.KnockbackConfig
 import org.bukkit.ChatColor
 import org.bukkit.GameMode
