@@ -7,7 +7,6 @@ import dev.dejvokep.boostedyaml.settings.loader.LoaderSettings
 import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings
 import me.cirnoslab.smashsumo.SmashSumo
 import java.io.File
-import kotlin.collections.forEach
 
 /**
  * Kit manager singleton
