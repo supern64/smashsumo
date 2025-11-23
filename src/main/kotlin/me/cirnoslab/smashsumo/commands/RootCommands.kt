@@ -10,6 +10,9 @@ import me.cirnoslab.smashsumo.game.GameManager
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 
+/**
+ * Root command
+ */
 object RootCommands {
     fun handle(
         s: CommandSender,

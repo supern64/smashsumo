@@ -11,7 +11,14 @@ import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.event.player.PlayerQuitEvent
 
+/**
+ * Primary listener for game based events
+ */
 class GameListener : Listener {
+    /**
+     * Detects if player has exited arena.
+     * Kills if in-game, teleports back if waiting.
+     */
     @EventHandler
     fun onPlayerExitArenaBound(e: PlayerMoveEvent) {
         val gp = GameManager.getGamePlayer(e.player) ?: return
@@ -30,11 +37,17 @@ class GameListener : Listener {
         }
     }
 
+    /**
+     * Detects if a player leaves the server, and make the player leave the game too.
+     */
     @EventHandler
     fun onPlayerQuit(e: PlayerQuitEvent) {
         GameManager.leave(e.player)
     }
 
+    /**
+     * Detects if a player jumps from the respawn platform, and despawns it instantly if so.
+     */
     @EventHandler
     fun onPlayerJumpFromRespawnPlatform(e: PlayerMoveEvent) {
         val gp = GameManager.getGamePlayer(e.player) ?: return
@@ -49,6 +62,9 @@ class GameListener : Listener {
         }
     }
 
+    /**
+     * Prevents a player from moving during countdown.
+     */
     @EventHandler
     fun onPlayerCountdownMove(e: PlayerMoveEvent) {
         val gp = GameManager.getGamePlayer(e.player) ?: return

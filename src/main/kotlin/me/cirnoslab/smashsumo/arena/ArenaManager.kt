@@ -9,10 +9,23 @@ import me.cirnoslab.smashsumo.SmashSumo
 import me.cirnoslab.smashsumo.Utils
 import java.io.File
 
+/**
+ * Arena management singleton
+ */
 object ArenaManager {
+    /**
+     * A map of arena names and their [Arena]
+     */
     val arenas: MutableMap<String, Arena> = mutableMapOf()
     private lateinit var arenaF: YamlDocument
 
+    /**
+     * Initializes arena storage. Must be called before use of any other function.
+     *
+     * @param dataFolder the data folder for the plugin.
+     * @return the number of arenas loaded
+     * @throws java.io.IOException
+     */
     fun init(dataFolder: File): Int {
         arenaF =
             YamlDocument.create(
@@ -25,11 +38,21 @@ object ArenaManager {
         return loadArenaList()
     }
 
+    /**
+     * Reloads the internal storage and arena list.
+     *
+     * @return the number of arenas loaded
+     */
     fun reload(): Int {
         arenaF.reload()
         return loadArenaList()
     }
 
+    /**
+     * Parses the arena list from internal storage.
+     *
+     * @return the number of arenas loaded
+     */
     fun loadArenaList(): Int {
         arenas.clear()
         arenaF.getMapList("arenas").forEach { map ->
@@ -46,6 +69,9 @@ object ArenaManager {
         return arenas.size
     }
 
+    /**
+     * Saves the internal storage to disk.
+     */
     fun saveArenas() {
         val arenaList = mutableListOf<Map<String, Any>>()
         arenas.values.forEach { arena ->

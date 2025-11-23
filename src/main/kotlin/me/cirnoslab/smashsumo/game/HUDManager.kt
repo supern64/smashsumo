@@ -3,6 +3,12 @@ package me.cirnoslab.smashsumo.game
 import io.github.theluca98.textapi.ActionBar
 import org.bukkit.scheduler.BukkitRunnable
 
+/**
+ * HUD Manager singleton.
+ * Only used for sending updates.
+ *
+ * @see GamePlayer
+ */
 object HUDManager {
     class SendHUD : BukkitRunnable() {
         override fun run() {

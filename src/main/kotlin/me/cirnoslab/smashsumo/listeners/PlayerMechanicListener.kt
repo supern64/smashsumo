@@ -4,6 +4,7 @@ import io.github.theluca98.textapi.ActionBar
 import me.cirnoslab.smashsumo.game.Game
 import me.cirnoslab.smashsumo.game.GameManager
 import me.cirnoslab.smashsumo.game.GamePlayer
+import me.cirnoslab.smashsumo.game.GameSettings
 import org.bukkit.GameMode
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
@@ -23,8 +24,16 @@ import kotlin.math.roundToInt
 import kotlin.math.sign
 import kotlin.random.Random
 
+/**
+ * Primary listener to implement player mechanics
+ */
 class PlayerMechanicListener : Listener {
-    // check player speed
+    /**
+     * Calculates player speed.
+     *
+     * @see GamePlayer.speed
+     * @see GamePlayer.speedSquared
+     */
     @EventHandler(priority = EventPriority.MONITOR)
     fun onPlayerMove(e: PlayerMoveEvent) {
         val gp = GameManager.getGamePlayer(e.player) ?: return
@@ -37,7 +46,11 @@ class PlayerMechanicListener : Listener {
         }
     }
 
-    // apply knockback
+    /**
+     * Applies knockback according to damage and updates the displays.
+     *
+     * @see me.cirnoslab.smashsumo.game.KnockbackConfig
+     */
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onPlayerHit(e: EntityDamageByEntityEvent) {
         if (e.entity !is Player || e.damager !is Player) return
@@ -111,7 +124,10 @@ class PlayerMechanicListener : Listener {
             .score = dGP.damage.roundToInt()
     }
 
-    // make players not affected by world
+    /**
+     * Prevents players from automatically healing
+     * (disrupts damage display)
+     */
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onPlayerHeal(e: EntityRegainHealthEvent) {
         if (e.entity !is Player) return
@@ -121,6 +137,9 @@ class PlayerMechanicListener : Listener {
         e.isCancelled = true
     }
 
+    /**
+     * Prevents players from losing hunger
+     */
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onPlayerLoseHunger(e: FoodLevelChangeEvent) {
         if (e.entity !is Player) return
@@ -130,6 +149,9 @@ class PlayerMechanicListener : Listener {
         e.foodLevel = 20
     }
 
+    /**
+     * Prevents players from fall damage
+     */
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onPlayerFall(e: EntityDamageEvent) {
         if (e.entity !is Player) return
@@ -140,6 +162,11 @@ class PlayerMechanicListener : Listener {
         e.isCancelled = true
     }
 
+    /**
+     * Prevents players from placing blocks
+     *
+     * @see GameSettings.allowBlock
+     */
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onPlayerPlaceBlock(e: BlockPlaceEvent) {
         val game = GameManager.getGame(e.player) ?: return
@@ -147,14 +174,23 @@ class PlayerMechanicListener : Listener {
         e.isCancelled = true
     }
 
+    /**
+     * Prevents players from breaking blocks
+     *
+     * @see GameSettings.allowBlock
+     */
     @EventHandler(priority = EventPriority.HIGHEST)
-    fun onPlayerPlaceBlock(e: BlockBreakEvent) {
+    fun onPlayerBreakBlock(e: BlockBreakEvent) {
         val game = GameManager.getGame(e.player) ?: return
         if (game.settings.allowBlock) return
         e.isCancelled = true
     }
 
-    // triple jumping
+    /**
+     * Handles triple jumping
+     *
+     * @see GamePlayer.jumpPhase
+     */
     @EventHandler
     fun onPlayerFly(e: PlayerToggleFlightEvent) {
         val gp = GameManager.getGamePlayer(e.player) ?: return

@@ -8,6 +8,9 @@ import me.cirnoslab.smashsumo.arena.ArenaManager
 import me.cirnoslab.smashsumo.game.GameManager
 import org.bukkit.command.CommandSender
 
+/**
+ * Handler for configuration related commands
+ */
 object ConfigCommands {
     fun handle(
         s: CommandSender,

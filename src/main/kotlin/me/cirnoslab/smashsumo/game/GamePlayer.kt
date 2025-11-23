@@ -15,29 +15,90 @@ import org.bukkit.Location
 import org.bukkit.entity.Player
 import kotlin.math.sqrt
 
+/**
+ * Represents the game state of a player in a [Game]
+ *
+ * @property game the Game this GamePlayer is for
+ * @property player the Player this GamePlayer is for
+ * @property playerNumber the player order (see [Game.initStart])
+ * @property lives the number of lives that this player has
+ */
 class GamePlayer(
     val game: Game,
     val player: Player,
     var playerNumber: Int? = null,
     var lives: Int,
 ) {
+    /**
+     * The current state of this player
+     *
+     * @see PlayerState
+     */
     var state: PlayerState = PlayerState.WAITING
+
+    /**
+     * The current damage percentage of this player
+     */
     var damage: Double = 0.0
-    var speedSquared: Double = 0.0 // measured from PlayerMoveEvent
+
+    /**
+     * The current speed squared of this player, measured from [org.bukkit.event.player.PlayerMoveEvent]
+     *
+     * @see me.cirnoslab.smashsumo.listeners.PlayerMechanicListener.onPlayerHit
+     */
+    var speedSquared: Double = 0.0
+
+    /**
+     * The [FastBoard] instance used by this player
+     */
     var board = FastBoard(player)
+
+    /**
+     * The [Location] this player will respawn after death
+     *
+     * @see Game.kill
+     */
     var respawnPoint: Location? = null
+
+    /**
+     * Whether this player is still waiting to be respawned
+     *
+     * @see Game.kill
+     */
     var waitRespawn = false
+
+    /**
+     * The current double jump phase
+     *
+     * @see me.cirnoslab.smashsumo.listeners.PlayerMechanicListener.onPlayerFly
+     */
     var jumpPhase = 0
 
+    /**
+     * The current speed of this player, measured from [org.bukkit.event.player.PlayerMoveEvent]
+     *
+     * @see me.cirnoslab.smashsumo.listeners.PlayerMechanicListener.onPlayerHit
+     */
     val speed: Double
         get() = sqrt(speedSquared)
 
+    /**
+     * The current health mapped from [damage]
+     */
     val displayHealth: Double
         get() = Utils.ntrc(damage, 0.0, 125.0, 20.0, 1.0)
 
+    /**
+     * The display string for life count
+     */
     val lifeString: String
         get() = "${color}${"⬤".repeat(lives)}${GRAY}${"⬤".repeat(game.settings.lives - lives)}"
 
+    /**
+     * The display string for the player's action bar
+     *
+     * @see HUDManager
+     */
     // HUDs are here so they can be modified per player
     val actionBarDisplay: String
         get() {
@@ -50,6 +111,11 @@ class GamePlayer(
             }
         }
 
+    /**
+     * The display list for the player's scoreboard
+     *
+     * @see HUDManager
+     */
     val scoreboardDisplay: List<String>
         get() {
             return when (state) {
@@ -90,9 +156,15 @@ class GamePlayer(
             }
         }
 
+    /**
+     * The main color of the player (based on [playerNumber])
+     */
     val color
         get() = if (playerNumber != null) teamColors[(playerNumber!! - 1) % teamColors.size] else GRAY
 
+    /**
+     * The damage color used
+     */
     val damageColor
         get() =
             when (damage) {
@@ -102,11 +174,33 @@ class GamePlayer(
                 else -> DARK_RED
             }
 
+    /**
+     * Represents player state
+     */
     enum class PlayerState {
+        /**
+         * Waiting for game to begin
+         */
         WAITING,
+
+        /**
+         * Currently playing
+         */
         IN_GAME,
+
+        /**
+         * Currently spectating
+         */
         SPECTATING,
-        GHOST, // for players who left midgame
+
+        /**
+         * Does not exist (left midgame)
+         */
+        GHOST,
+
+        /**
+         * Waiting for game to end
+         */
         ENDING,
     }
 }

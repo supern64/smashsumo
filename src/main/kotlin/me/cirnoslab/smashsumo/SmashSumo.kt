@@ -15,6 +15,9 @@ import org.bukkit.command.CommandSender
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.logging.Level
 
+/**
+ * Main entrypoint for plugin
+ */
 class SmashSumo : JavaPlugin() {
     override fun onEnable() {
         plugin = this
@@ -60,10 +63,21 @@ class SmashSumo : JavaPlugin() {
     }
 
     companion object {
+        /**
+         * Logs text to the console with level [Level.INFO].
+         *
+         * @param text the String to log
+         */
         fun log(text: String) {
             plugin.logger.log(Level.INFO, text)
         }
 
+        /**
+         * Logs text to the console with level [level].
+         *
+         * @param level the [Level] to log as
+         * @param text the String to log
+         */
         fun log(
             level: Level,
             text: String,
@@ -71,8 +85,14 @@ class SmashSumo : JavaPlugin() {
             plugin.logger.log(level, text)
         }
 
+        /**
+         * The plugin instance
+         */
         lateinit var plugin: SmashSumo
 
+        /**
+         * One long line on the scoreboard
+         */
         val SCOREBOARD_LINE: String = "${ChatColor.WHITE}${ChatColor.STRIKETHROUGH}-------------------${ChatColor.RESET}"
     }
 }

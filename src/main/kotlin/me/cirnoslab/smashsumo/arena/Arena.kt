@@ -5,6 +5,17 @@ import org.bukkit.Location
 import kotlin.math.cos
 import kotlin.math.sin
 
+/**
+ * Represents a playable arena
+ *
+ * @property name the name of the Arena
+ * @property center the center of the Arena
+ * @property spawnRadius the radius of the circle which players will be spawned from
+ * @property bottomBarrier the lowest Y level where players can remain alive
+ * @property sideRadius the highest distance from the center where players can remain alive
+ * @property respawnHeight the Y level where players should respawn from
+ * @property topBarrier the highest Y level where players can remain alive
+ */
 class Arena(
     val name: String,
     val center: Location,
@@ -14,8 +25,17 @@ class Arena(
     val respawnHeight: Int,
     val topBarrier: Double? = null,
 ) {
+    /**
+     * The current state of the arena
+     */
     var state: ArenaState = ArenaState.AVAILABLE
 
+    /**
+     * Checks if [location] is within the valid bounds of the Arena.
+     *
+     * @param location the [Location] to check
+     * @return whether the location is within the arena
+     */
     fun inArena(location: Location): Boolean {
         if (location.world != center.world) return false
         if (location.y < bottomBarrier) return false
@@ -25,6 +45,12 @@ class Arena(
         return true
     }
 
+    /**
+     * Gets the locations around the circle where players will be spawned.
+     *
+     * @param playerCount the number of players to spawn
+     * @return a List of spawn locations
+     */
     fun getSpawnLocations(playerCount: Int): List<Location> {
         val locations = mutableListOf<Location>()
         val angleIncrement = 2 * Math.PI / playerCount
@@ -41,6 +67,12 @@ class Arena(
         return locations
     }
 
+    /**
+     * Gets the [n]th location to respawn a player.
+     *
+     * @param n the location index
+     * @return the respawn location
+     */
     fun getRespawnPoint(n: Int): Location {
         if (n == 0) return Location(center.world, center.blockX.toDouble(), respawnHeight.toDouble(), center.blockZ.toDouble())
         val respawnRadius = spawnRadius / 1.5
@@ -53,6 +85,17 @@ class Arena(
         )
     }
 
+    /**
+     * Builder class for [Arena]
+     *
+     * @property name the name of the Arena
+     * @property center the center of the Arena
+     * @property spawnRadius the radius of the circle which players will be spawned from
+     * @property bottomBarrier the lowest Y level where players can remain alive
+     * @property sideRadius the highest distance from the center where players can remain alive
+     * @property respawnHeight the Y level where players should respawn from
+     * @property topBarrier the highest Y level where players can remain alive
+     */
     data class Builder(
         var name: String,
         var center: Location,
@@ -72,6 +115,11 @@ class Arena(
             arena.topBarrier,
         )
 
+        /**
+         * Checks whether the arena is valid or not.
+         *
+         * @return a list of [ArenaInvalidCause]
+         */
         fun checkArena(): List<ArenaInvalidCause> {
             val cause = mutableListOf<ArenaInvalidCause>()
             if (spawnRadius >= sideRadius) cause.add(ArenaInvalidCause.INVALID_SPAWN_RADIUS)
@@ -87,8 +135,18 @@ class Arena(
             return cause
         }
 
+        /**
+         * Builds the arena.
+         *
+         * @return the [Arena]
+         */
         fun build() = Arena(name, center, spawnRadius, bottomBarrier, sideRadius, respawnHeight, topBarrier)
 
+        /**
+         * Possible causes for an invalid arena
+         *
+         * @property description the human readable description of a fix
+         */
         enum class ArenaInvalidCause(
             val description: String,
         ) {
@@ -98,14 +156,35 @@ class Arena(
         }
     }
 
+    /**
+     * The state of an arena
+     */
     enum class ArenaState {
+        /**
+         * Arena is ready for use
+         */
         AVAILABLE,
-        WAITING, // or ending
+
+        /**
+         * Arena is waiting for a game to begin or end
+         */
+        WAITING,
+
+        /**
+         * Arena is in use
+         */
         PLAYING,
     }
 
     companion object {
+        /**
+         * How tall the top barrier must be from the center
+         */
         const val MINIMUM_TOP_BARRIER_HEIGHT = 8
+
+        /**
+         * How tall the respawn height must be from the center
+         */
         const val MINIMUM_RESPAWN_HEIGHT = 3
     }
 }

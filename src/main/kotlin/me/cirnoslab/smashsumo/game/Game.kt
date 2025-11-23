@@ -29,17 +29,47 @@ import org.bukkit.scoreboard.Scoreboard
 import java.util.UUID
 import java.util.logging.Level
 
+/**
+ * Represents a game
+ *
+ * @property arena the [Arena] that this game uses
+ * @property settings the [GameSettings] that this game will use
+ */
 class Game(
     // game state is tied to arena state
     val arena: Arena,
     val settings: GameSettings,
 ) {
+    /**
+     * The map of all players who are involved in the game (including spectators)
+     */
     val gamePlayers = mutableMapOf<UUID, GamePlayer>()
+
+    /**
+     * The list of players who are (or were) part of the game
+     */
     var startingPlayers: List<GamePlayer>? = null
+
+    /**
+     * The current state of the game
+     *
+     * @see GameState
+     */
     var state = GameState.WAITING
+
+    /**
+     * The scoreboard instance used by the game
+     */
     val scoreboard: Scoreboard = Bukkit.getScoreboardManager().newScoreboard
+
+    /**
+     * The time the game started (from [System.currentTimeMillis])
+     */
     private var startTime: Long? = null
 
+    /**
+     * The current time the game has progressed for (used for display)
+     */
     val formattedTime: String
         get() =
             startTime?.let {
@@ -47,7 +77,16 @@ class Game(
                 return "${S}${"%02d".format(Math.floorDiv(duration, 60))}$WHITE:${S}${"%02d".format(duration % 60)}"
             } ?: "${S}00$WHITE:${S}00"
 
-    // should be called via GameManager
+    /**
+     * Joins a player into the game.
+     * Will join as a spectator if game has already started.
+     * Should be called by GameManager.
+     *
+     * @param p the player to join
+     * @return the join result
+     *
+     * @see GameJoinResult
+     */
     fun join(p: Player): GameJoinResult {
         if (gamePlayers.containsKey(p.uniqueId)) return GameJoinResult.ALREADY_IN_GAME
         if (state == GameState.ENDING) return GameJoinResult.GAME_ENDING
@@ -80,7 +119,15 @@ class Game(
         return GameJoinResult.SUCCESS
     }
 
-    // should be called via GameManager
+    /**
+     * Makes a player leave the game and handles the remaining players.
+     * Should be called by GameManager.
+     *
+     * @param p the player to leave
+     * @return the leave result
+     *
+     * @see GameLeaveResult
+     */
     fun leave(p: Player): GameLeaveResult {
         val gp = gamePlayers[p.uniqueId] ?: throw IllegalArgumentException("tried to kick GamePlayer that doesn't exist")
 
@@ -114,7 +161,12 @@ class Game(
         return GameLeaveResult.SUCCESS
     }
 
-    // countdown routine
+    /**
+     * Initializes the countdown for the game.
+     * Teleports all players to their respective spawn points and freezes them.
+     *
+     * @see CountdownTask
+     */
     fun initStart() {
         arena.state = Arena.ArenaState.PLAYING
         state = GameState.COUNTDOWN
@@ -144,6 +196,13 @@ class Game(
         CountdownTask(this).runTaskTimer(SmashSumo.plugin, 0L, 20L)
     }
 
+    /**
+     * Counts the game down to the start.
+     * Should only be called by [initStart]
+     *
+     * @property game the Game to start
+     * @property countdown the current countdown (3-0)
+     */
     class CountdownTask(
         val game: Game,
     ) : BukkitRunnable() {
@@ -170,7 +229,14 @@ class Game(
         }
     }
 
-    // death routine
+    /**
+     * Kills a player and handles death routines (including game end).
+     *
+     * @property gp the GamePlayer to kill
+     * @throws IllegalArgumentException if [gp] does not belong to this game
+     * @throws IllegalStateException if [gp] is not an active player (e.g. spectator)
+     * @see RespawnSetupTask
+     */
     fun kill(gp: GamePlayer) {
         if (!gamePlayers.containsKey(gp.player.uniqueId)) throw IllegalArgumentException("tried to kill GamePlayer from incorrect session")
         if (gp.state != GamePlayer.PlayerState.IN_GAME) throw IllegalStateException("tried to kill out of game player")
@@ -211,6 +277,13 @@ class Game(
         }
     }
 
+    /**
+     * Sets up a respawn platform.
+     * Player must already have a respawn point specified ([GamePlayer.respawnPoint])
+     *
+     * @property game the Game this respawn platform belongs to
+     * @property gp the GamePlayer this respawn platform is for
+     */
     @Suppress("DEPRECATION")
     class RespawnSetupTask(
         val game: Game,
@@ -226,6 +299,14 @@ class Game(
         }
     }
 
+    /**
+     * Teleports a player to their respawn platform.
+     * Player must already have a respawn point specified ([GamePlayer.respawnPoint])
+     * and the respawn point must have been placed.
+     *
+     * @property gp the GamePlayer to teleport
+     * @see RespawnSetupTask
+     */
     class PlayerRespawnTask(
         val gp: GamePlayer,
     ) : BukkitRunnable() {
@@ -238,6 +319,17 @@ class Game(
         }
     }
 
+    /**
+     * Decays a respawn platform.
+     * Player must already have a respawn point specified ([GamePlayer.respawnPoint]),
+     * the respawn point must have been placed, and the player must have been teleported to it.
+     *
+     * @property game the Game this respawn platform belongs to
+     * @property gp the GamePlayer this respawn platform is for
+     * @property phase the current phase of the platform (yellow-orange-red-air)
+     * @see PlayerRespawnTask
+     * @see RespawnSetupTask
+     */
     @Suppress("DEPRECATION")
     class RespawnPlatformExpireTask(
         val game: Game,
@@ -267,6 +359,12 @@ class Game(
         }
     }
 
+    /**
+     * Ends the game and declares a winner.
+     * Schedules a task to teleport the player back to the lobby.
+     *
+     * @see EndGameTask
+     */
     fun endGame() {
         state = GameState.ENDING
         val winnerName = getActivePlayers()[0].player.name
@@ -283,6 +381,12 @@ class Game(
         EndGameTask(this).runTaskLater(SmashSumo.plugin, 20 * 6)
     }
 
+    /**
+     * Deinitializes players and teleports them back to the lobby.
+     *
+     * @param game the Game to deinitialize
+     * @see endGame
+     */
     class EndGameTask(
         val game: Game,
     ) : BukkitRunnable() {
@@ -303,22 +407,60 @@ class Game(
         }
     }
 
+    /**
+     * Message every player in the game, including spectators.
+     *
+     * @param m the String to send
+     */
     fun messageAll(m: String) {
         gamePlayers.values.forEach { gp -> gp.player.sendMessage(m) }
     }
 
+    /**
+     * Get a list of GamePlayers who are currently in game (i.e. not spectating)
+     *
+     * @return the list of GamePlayers
+     */
     fun getActivePlayers(): List<GamePlayer> = gamePlayers.values.filter { it.state == GamePlayer.PlayerState.IN_GAME }
 
+    /**
+     * Get a list of GamePlayers who are currently respawning
+     *
+     * @return the list of GamePlayers
+     */
     fun getRespawningPlayers(): List<GamePlayer> = gamePlayers.values.filter { it.respawnPoint != null }
 
+    /**
+     * Represents states of a game
+     */
     enum class GameState {
+        /**
+         * Waiting for players to join
+         */
         WAITING,
+
+        /**
+         * Counting down to start
+         */
         COUNTDOWN,
+
+        /**
+         * In game
+         */
         IN_GAME,
+
+        /**
+         * Waiting for game to end
+         */
         ENDING,
     }
 
     companion object {
+        /**
+         * Deinitializes a player and restores them to normal.
+         *
+         * @param gp the GamePlayer to deinitialize
+         */
         fun deinitPlayer(gp: GamePlayer) {
             gp.player.setAbsorptionHearts(0f)
             gp.player.health = 20.0

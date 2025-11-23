@@ -9,6 +9,9 @@ import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import java.util.UUID
 
+/**
+ * Handler for arena management related commands
+ */
 object ArenaCommands {
     private var selectedArena: MutableMap<UUID, Arena.Builder> = mutableMapOf()
 
