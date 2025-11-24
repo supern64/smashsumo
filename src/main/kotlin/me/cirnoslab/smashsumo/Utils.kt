@@ -95,6 +95,19 @@ object Utils {
     }
 
     /**
+     * Clears the entire inventory, including armor.
+     *
+     * @receiver the Player
+     */
+    fun Player.clearInventory() {
+        this.inventory.clear()
+        this.inventory.helmet = null
+        this.inventory.chestplate = null
+        this.inventory.leggings = null
+        this.inventory.boots = null
+    }
+
+    /**
      * Checks how long [s1] and [s2] match from the start.
      *
      * @param s1 the 1st String

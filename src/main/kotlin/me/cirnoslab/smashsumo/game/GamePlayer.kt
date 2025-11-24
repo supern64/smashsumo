@@ -8,6 +8,7 @@ import me.cirnoslab.smashsumo.Config.Style.S
 import me.cirnoslab.smashsumo.Config.Style.teamColors
 import me.cirnoslab.smashsumo.SmashSumo.Companion.SCOREBOARD_LINE
 import me.cirnoslab.smashsumo.Utils
+import me.cirnoslab.smashsumo.Utils.clearInventory
 import me.cirnoslab.smashsumo.Utils.setAbsorptionHearts
 import me.cirnoslab.smashsumo.item.ItemManager
 import me.cirnoslab.smashsumo.item.events.ItemArmorEvent
@@ -237,7 +238,7 @@ class GamePlayer(
         player.isFlying = false
 
         player.addPotionEffect(PotionEffect(PotionEffectType.JUMP, Int.MAX_VALUE, 1))
-        clearInventory()
+        player.clearInventory()
     }
 
     /**
@@ -398,7 +399,7 @@ class GamePlayer(
             state = PlayerState.SPECTATING
             if (game.getActivePlayers().size == 1) return // let Game handle the end routine
             player.gameMode = GameMode.SPECTATOR
-            clearInventory()
+            player.clearInventory()
             player.sendMessage("${RED}You have been eliminated! You are now a spectator.")
         } else {
             player.gameMode = GameMode.SPECTATOR
@@ -428,7 +429,7 @@ class GamePlayer(
     fun end() {
         state = PlayerState.ENDING
         player.gameMode = GameMode.ADVENTURE
-        clearInventory()
+        player.clearInventory()
     }
 
     /**
@@ -443,7 +444,7 @@ class GamePlayer(
         player.isFlying = false
         player.scoreboard = Bukkit.getScoreboardManager().mainScoreboard
         player.gameMode = Config.lobbyGameMode
-        clearInventory()
+        player.clearInventory()
     }
 
     /**
@@ -453,14 +454,6 @@ class GamePlayer(
         sbTeam.suffix = if (lives > 0) " $lifeString" else " $GRAY[DEAD]"
         sbHealth.getScore(player.name).score = damage.roundToInt()
         ActionBar(actionBarDisplay).send(player)
-    }
-
-    fun clearInventory() {
-        player.inventory.clear()
-        player.inventory.helmet = null
-        player.inventory.chestplate = null
-        player.inventory.leggings = null
-        player.inventory.boots = null
     }
 
     /**
