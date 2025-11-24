@@ -10,7 +10,6 @@ import org.bukkit.Material
 import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack
 import org.bukkit.event.Listener
 import org.bukkit.inventory.ItemStack
-import org.jetbrains.annotations.Contract
 
 /**
  * Represents an item. Must be registered with [ItemManager].
@@ -102,7 +101,6 @@ abstract class ItemData {
      * @param i the ItemStack
      * @return true if NBT tag exists, false otherwise
      */
-    @Contract("null->null")
     fun hasNBT(i: ItemStack): Boolean {
         val nmsI = CraftItemStack.asNMSCopy(i)
         if (nmsI == null || !nmsI.hasTag()) return false
