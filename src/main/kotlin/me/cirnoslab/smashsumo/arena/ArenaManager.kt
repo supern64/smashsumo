@@ -75,13 +75,15 @@ object ArenaManager {
     fun saveArenas() {
         val arenaList = mutableListOf<Map<String, Any>>()
         arenas.values.forEach { arena ->
-            val map = mutableMapOf<String, Any>()
-            map["name"] = arena.name
-            map["center"] = Utils.l2s(arena.center)
-            map["spawnRadius"] = arena.spawnRadius
-            map["bottomBarrier"] = arena.bottomBarrier
-            map["sideRadius"] = arena.sideRadius
-            map["respawnHeight"] = arena.respawnHeight
+            val map =
+                mutableMapOf<String, Any>(
+                    "name" to arena.name,
+                    "center" to Utils.l2s(arena.center),
+                    "spawnRadius" to arena.spawnRadius,
+                    "bottomBarrier" to arena.bottomBarrier,
+                    "sideRadius" to arena.sideRadius,
+                    "respawnHeight" to arena.respawnHeight,
+                )
             if (arena.topBarrier != null) {
                 map["topBarrier"] = arena.topBarrier
             }
