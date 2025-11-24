@@ -5,24 +5,18 @@ import me.cirnoslab.smashsumo.Config
 import me.cirnoslab.smashsumo.Config.Style.P
 import me.cirnoslab.smashsumo.Config.Style.S
 import me.cirnoslab.smashsumo.SmashSumo
-import me.cirnoslab.smashsumo.Utils.setAbsorptionHearts
 import me.cirnoslab.smashsumo.arena.Arena
 import me.cirnoslab.smashsumo.game.GameManager.GameJoinResult
 import me.cirnoslab.smashsumo.game.GameManager.GameLeaveResult
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor.BOLD
 import org.bukkit.ChatColor.GOLD
-import org.bukkit.ChatColor.GRAY
-import org.bukkit.ChatColor.RED
 import org.bukkit.ChatColor.WHITE
 import org.bukkit.ChatColor.YELLOW
-import org.bukkit.GameMode
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.entity.Player
-import org.bukkit.potion.PotionEffect
-import org.bukkit.potion.PotionEffectType
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scoreboard.DisplaySlot
 import org.bukkit.scoreboard.Scoreboard
@@ -94,28 +88,14 @@ class Game(
         val gp = GamePlayer(this, p, null, settings.lives, settings.defaultKit)
         gamePlayers[p.uniqueId] = gp
 
-        gp.board.updateTitle("${P}${BOLD}Smash Sumo")
-
         if (state != GameState.WAITING) {
-            gamePlayers[p.uniqueId]!!.state = GamePlayer.PlayerState.SPECTATING
-            p.gameMode = GameMode.SPECTATOR
+            gp.init(true)
             p.teleport(Location(arena.center.world, arena.center.x, arena.center.y + 2.0, arena.center.z))
             return GameJoinResult.GAME_STARTED
         }
 
-        p.gameMode = GameMode.ADVENTURE
-        p.health = 20.0
-        p.foodLevel = 20
-        p.setAbsorptionHearts(settings.lives * 2f)
-
-        // double jump setup
-        p.allowFlight = true
-        p.isFlying = false
-
-        p.addPotionEffect(PotionEffect(PotionEffectType.JUMP, Int.MAX_VALUE, 1))
-        p.inventory.clear()
+        gp.init()
         p.teleport(Location(arena.center.world, arena.center.x, arena.center.y + 2.0, arena.center.z))
-
         messageAll("${S}${p.name} ${P}has joined the game!")
         return GameJoinResult.SUCCESS
     }
@@ -149,7 +129,7 @@ class Game(
             }
         }
 
-        deinitPlayer(gp)
+        gp.deinit()
         gamePlayers.remove(p.uniqueId)
         val lobby = Config.lobbyPosition
         if (lobby == null) {
@@ -177,23 +157,8 @@ class Game(
         health.displaySlot = DisplaySlot.BELOW_NAME
 
         gamePlayers.values.forEachIndexed { i, gp ->
-            gp.state = GamePlayer.PlayerState.IN_GAME
+            gp.setup(i + 1, health)
             gp.player.teleport(spawnPoints[i])
-            gp.playerNumber = i + 1
-
-            health.getScore(gp.player.name).score = 0
-
-            val gpTeam = scoreboard.registerNewTeam("P${gp.playerNumber}")
-            gpTeam.prefix = "${gp.color}[P${gp.playerNumber}] "
-            gpTeam.suffix = " " + gp.lifeString
-            gpTeam.addEntry(gp.player.name)
-            gp.player.scoreboard = scoreboard
-
-            gp.jumpPhase = 0
-            gp.player.allowFlight = false
-            gp.player.isFlying = false
-
-            gp.kit?.apply(gp.player)
         }
         startingPlayers = gamePlayers.values.toList()
         CountdownTask(this).runTaskTimer(SmashSumo.plugin, 0L, 20L)
@@ -245,31 +210,15 @@ class Game(
         if (gp.state != GamePlayer.PlayerState.IN_GAME) throw IllegalStateException("tried to kill out of game player")
         arena.center.world.strikeLightningEffect(gp.player.location)
 
-        gp.lives -= 1
-        gp.damage = 0.0
-        gp.player.health = 20.0
-
-        gp.player.setAbsorptionHearts(gp.lives * 2.0f)
-        scoreboard.getObjective("%").getScore(gp.player.name).score = 0
+        val respawnLocation = arena.getRespawnPoint(getRespawningPlayers().size)
+        gp.kill(respawnLocation)
 
         if (gp.lives == 0) {
-            scoreboard.getTeam("P${gp.playerNumber}").suffix = " $GRAY[DEAD]"
-            gp.state = GamePlayer.PlayerState.SPECTATING
             if (getActivePlayers().size == 1) {
                 // game end routine
                 endGame()
-            } else {
-                gp.player.gameMode = GameMode.SPECTATOR
-                gp.player.inventory.clear()
-                gp.player.sendMessage("${RED}You have been eliminated! You are now a spectator.")
             }
         } else {
-            gp.player.gameMode = GameMode.SPECTATOR
-            scoreboard.getTeam("P${gp.playerNumber}").suffix = " " + gp.lifeString
-
-            val respawnLocation = arena.getRespawnPoint(getRespawningPlayers().size)
-            gp.respawnPoint = respawnLocation
-            gp.waitRespawn = true
             // respawn routine
             RespawnSetupTask(this, gp).runTaskLater(SmashSumo.plugin, settings.respawnTime - 2)
             PlayerRespawnTask(gp).runTaskLater(SmashSumo.plugin, settings.respawnTime)
@@ -315,12 +264,7 @@ class Game(
         val gp: GamePlayer,
     ) : BukkitRunnable() {
         override fun run() {
-            val rl = gp.respawnPoint ?: return // should never return unless player leaves midgame
-            gp.player.gameMode = GameMode.ADVENTURE
-            gp.kit?.replenish(gp.player)
-            gp.player.teleport(Location(rl.world, rl.blockX + 0.5, rl.blockY + 1.0, rl.blockZ + 0.5, 0f, 90f))
-            gp.player.playSound(rl, Sound.NOTE_PIANO, 1.0f, 1.9f)
-            gp.waitRespawn = false
+            gp.respawn()
         }
     }
 
@@ -377,9 +321,7 @@ class Game(
         val title = Title("${P}GAME!", "${YELLOW}Winner: ${GOLD}${BOLD}$winnerName", 0, 60, 10)
 
         gamePlayers.values.forEach { gp ->
-            gp.state = GamePlayer.PlayerState.ENDING
-            gp.player.gameMode = GameMode.ADVENTURE
-            gp.player.inventory.clear()
+            gp.end()
             gp.player.teleport(Location(arena.center.world, arena.center.x, arena.center.y + 2.0, arena.center.z))
             title.send(gp.player)
         }
@@ -403,7 +345,7 @@ class Game(
                 SmashSumo.log(Level.WARNING, "Lobby location not set. Players will not be teleported.")
             }
             game.gamePlayers.values.forEach { gp ->
-                deinitPlayer(gp)
+                gp.deinit()
                 if (lobby != null) {
                     gp.player.teleport(lobby)
                 }
@@ -444,24 +386,5 @@ class Game(
         COUNTDOWN,
         IN_GAME,
         ENDING,
-    }
-
-    companion object {
-        /**
-         * Deinitializes a player and restores them to normal.
-         *
-         * @param gp the GamePlayer to deinitialize
-         */
-        fun deinitPlayer(gp: GamePlayer) {
-            gp.player.setAbsorptionHearts(0f)
-            gp.player.health = 20.0
-            gp.player.removePotionEffect(PotionEffectType.JUMP)
-            gp.board.delete()
-            gp.player.allowFlight = false
-            gp.player.isFlying = false
-            gp.player.scoreboard = Bukkit.getScoreboardManager().mainScoreboard
-            gp.player.gameMode = Config.lobbyGameMode
-            gp.player.inventory.clear()
-        }
     }
 }

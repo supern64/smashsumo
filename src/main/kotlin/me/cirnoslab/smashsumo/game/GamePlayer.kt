@@ -1,19 +1,30 @@
 package me.cirnoslab.smashsumo.game
 
 import fr.mrmicky.fastboard.FastBoard
+import me.cirnoslab.smashsumo.Config
 import me.cirnoslab.smashsumo.Config.Style.P
 import me.cirnoslab.smashsumo.Config.Style.S
 import me.cirnoslab.smashsumo.Config.Style.teamColors
 import me.cirnoslab.smashsumo.SmashSumo.Companion.SCOREBOARD_LINE
 import me.cirnoslab.smashsumo.Utils
+import me.cirnoslab.smashsumo.Utils.setAbsorptionHearts
 import me.cirnoslab.smashsumo.kit.Kit
+import org.bukkit.Bukkit
+import org.bukkit.ChatColor.BOLD
 import org.bukkit.ChatColor.DARK_RED
 import org.bukkit.ChatColor.GRAY
 import org.bukkit.ChatColor.RED
 import org.bukkit.ChatColor.WHITE
 import org.bukkit.ChatColor.YELLOW
+import org.bukkit.GameMode
 import org.bukkit.Location
+import org.bukkit.Sound
 import org.bukkit.entity.Player
+import org.bukkit.potion.PotionEffect
+import org.bukkit.potion.PotionEffectType
+import org.bukkit.scoreboard.Objective
+import org.bukkit.scoreboard.Team
+import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 /**
@@ -55,6 +66,18 @@ class GamePlayer(
      * The [FastBoard] instance used by this player
      */
     var board = FastBoard(player)
+
+    /**
+     * The [Team] used to display the player's prefix
+     * Only exists after game starts counting down
+     */
+    lateinit var sbTeam: Team
+
+    /**
+     * The [Objective] used to display the player's health
+     * Only exists after game starts counting down
+     */
+    lateinit var sbHealth: Objective
 
     /**
      * The [Location] this player will respawn after death
@@ -177,6 +200,137 @@ class GamePlayer(
                 in 65.001..100.0 -> RED
                 else -> DARK_RED
             }
+
+    /**
+     * Initializes a player for the waiting room. Called by [Game.join]
+     * (does not teleport the player)
+     *
+     * @param spectate whether to set up as a spectator
+     */
+    fun init(spectate: Boolean = false) {
+        val arena = game.arena
+        board.updateTitle("${P}${BOLD}Smash Sumo")
+
+        if (spectate) {
+            state = PlayerState.SPECTATING
+            player.gameMode = GameMode.SPECTATOR
+            player.teleport(Location(arena.center.world, arena.center.x, arena.center.y + 2.0, arena.center.z))
+            return
+        }
+
+        player.gameMode = GameMode.ADVENTURE
+        player.health = 20.0
+        player.foodLevel = 20
+        player.setAbsorptionHearts(game.settings.lives * 2f)
+
+        // double jump setup
+        player.allowFlight = true
+        player.isFlying = false
+
+        player.addPotionEffect(PotionEffect(PotionEffectType.JUMP, Int.MAX_VALUE, 1))
+        player.inventory.clear()
+    }
+
+    /**
+     * Sets up a player for the game itself. Called by [Game.initStart]
+     *
+     * @param pn the player number assigned
+     */
+    fun setup(
+        pn: Int,
+        health: Objective,
+    ) {
+        sbHealth = health
+
+        state = PlayerState.IN_GAME
+        this.playerNumber = pn
+        sbHealth.getScore(player.name).score = 0
+
+        sbTeam = game.scoreboard.registerNewTeam("P$playerNumber")
+        sbTeam.prefix = "$color[P$playerNumber] "
+        sbTeam.suffix = " $lifeString"
+        sbTeam.addEntry(player.name)
+        player.scoreboard = game.scoreboard
+
+        jumpPhase = 0
+        player.allowFlight = false
+        player.isFlying = false
+
+        kit?.apply(player)
+    }
+
+    /**
+     * Kills a player to prepare them for respawn. Called by [Game.kill]
+     *
+     * @param respawnLocation an available respawn location
+     */
+    fun kill(respawnLocation: Location?) {
+        lives -= 1
+        damage = 0.0
+        player.health = 20.0
+        player.setAbsorptionHearts(lives * 2.0f)
+        updateScoreboard()
+
+        // dead check
+        if (lives == 0) {
+            state = PlayerState.SPECTATING
+            if (game.getActivePlayers().size == 1) return // let Game handle the end routine
+            player.gameMode = GameMode.SPECTATOR
+            player.inventory.clear()
+            player.sendMessage("${RED}You have been eliminated! You are now a spectator.")
+        } else {
+            player.gameMode = GameMode.SPECTATOR
+            require(respawnLocation != null)
+            respawnPoint = respawnLocation
+            waitRespawn = true
+            // wait for respawn by Game
+        }
+    }
+
+    /**
+     * Respawns the player to the point set in [respawnPoint].
+     * Will do nothing if respawnPoint is null.
+     */
+    fun respawn() {
+        val rl = respawnPoint ?: return
+        player.gameMode = GameMode.ADVENTURE
+        kit?.replenish(player)
+        player.teleport(Location(rl.world, rl.blockX + 0.5, rl.blockY + 1.0, rl.blockZ + 0.5, 0f, 90f))
+        player.playSound(rl, Sound.NOTE_PIANO, 1.0f, 1.9f)
+        waitRespawn = false
+    }
+
+    /**
+     * Sets a player into the ending state.
+     */
+    fun end() {
+        state = PlayerState.ENDING
+        player.gameMode = GameMode.ADVENTURE
+        player.inventory.clear()
+    }
+
+    /**
+     * Deinitializes this player and restores them to normal.
+     */
+    fun deinit() {
+        player.setAbsorptionHearts(0f)
+        player.health = 20.0
+        player.removePotionEffect(PotionEffectType.JUMP)
+        board.delete()
+        player.allowFlight = false
+        player.isFlying = false
+        player.scoreboard = Bukkit.getScoreboardManager().mainScoreboard
+        player.gameMode = Config.lobbyGameMode
+        player.inventory.clear()
+    }
+
+    /**
+     * Updates a player's scoreboard. Only usable after game has counted down.
+     */
+    fun updateScoreboard() {
+        sbTeam.suffix = if (lives > 0) " $lifeString" else " $GRAY[DEAD]"
+        sbHealth.getScore(player.name).score = damage.roundToInt()
+    }
 
     /**
      * Represents player state
