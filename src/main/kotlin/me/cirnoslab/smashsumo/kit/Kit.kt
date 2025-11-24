@@ -1,10 +1,9 @@
 package me.cirnoslab.smashsumo.kit
 
-import me.cirnoslab.smashsumo.item.ItemManager
-import org.bukkit.ChatColor
-import org.bukkit.Material
+import me.cirnoslab.smashsumo.Utils.clearInventory
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.PlayerInventory
 
 /**
  * Represents a kit that can be given to a player
@@ -26,10 +25,31 @@ class Kit(
         p: Player,
         clear: Boolean = true,
     ) {
-        if (clear) p.inventory.clear()
+        if (clear) p.clearInventory()
         for (item in items) {
-            p.inventory.setItem(item.inventorySlot, item.get())
+            p.inventory.setItem(item.slot, item.get())
         }
+    }
+
+    /**
+     * Get a list of Items where all items in the kit are the amount they should be replenished to (armor is always unique)
+     */
+    fun toReplenish(): List<Item> {
+        val seenItems = mutableListOf<Item>()
+        for (item in items) {
+            if (!item.replenishOnDeath) continue
+            if (item.isArmor) {
+                seenItems.add(item)
+                continue
+            }
+            val seen = seenItems.firstOrNull { i -> i.stack.isSimilar(item.stack) }
+            if (seen != null) {
+                seen.stack.amount += item.stack.amount
+            } else {
+                seenItems.add(Item(item.slot, item.stack.clone(), true))
+            }
+        }
+        return seenItems
     }
 
     /**
@@ -38,22 +58,52 @@ class Kit(
      * @param p the player to replenish items for
      */
     fun replenish(p: Player) {
-        for (item in items) {
-            val i = item.get()
-            if (!item.replenishOnDeath) continue
-            if (p.inventory.contains(i)) continue
+        val combined = toReplenish()
+        for (item in combined) {
+            if (!item.isArmor) {
+                if (p.inventory.containsAtLeast(item.stack, item.stack.amount)) continue
+                val inventoryAmount =
+                    p.inventory.contents
+                        .filter { r -> r != null && r.isSimilar(item.stack) }
+                        .map { r -> r.amount }
 
-            // complete inventory
-            val amount = p.inventory
-                .filter { r -> r.isSimilar(i) }
-                .map { r -> r.amount }
-                .reduce { a, b -> a + b }
+                val amount = if (inventoryAmount.isEmpty()) 0 else inventoryAmount.reduce { a, b -> a + b }
 
-            if (amount == 0) {
-                p.inventory.setItem(item.inventorySlot, i)
+                if (amount == 0) {
+                    p.inventory.setItem(item.slot, item.get())
+                } else {
+                    p.inventory.addItem(item.get(item.stack.amount - amount))
+                }
             } else {
-                p.inventory.addItem(item.get(item.amount - amount))
+                if (p.inventory.contains(item.stack)) continue
+                p.inventory.setItem(item.slot, item.get())
             }
+        }
+    }
+
+    companion object {
+        /**
+         * Creates a kit from a [PlayerInventory].
+         *
+         * @param i the player inventory
+         * @param name the kit's name
+         * @return the kit created
+         */
+        fun fromInventory(
+            i: PlayerInventory,
+            name: String,
+        ): Kit {
+            val itemList = mutableListOf<Item>()
+            i.contents.forEachIndexed { index, s ->
+                if (s == null) return@forEachIndexed
+                itemList.add(Item(index, s.clone(), true))
+            }
+            i.armorContents.forEachIndexed { index, s ->
+                if (s == null || s.amount < 1) return@forEachIndexed
+                // boots - 36, leggings - 37, chestplate - 38, helmet = 39
+                itemList.add(Item(index + 36, s.clone(), true))
+            }
+            return Kit(name, itemList)
         }
     }
 
@@ -61,46 +111,33 @@ class Kit(
      * Represents an item within a kit,
      * mcMaterial and ssItemID are mutually exclusive
      *
-     * @property amount the amount of the item
-     * @property inventorySlot what inventory slot the item will be in, see [org.bukkit.inventory.PlayerInventory.setItem]
+     * @property slot what inventory slot the item will be in, see [org.bukkit.inventory.PlayerInventory.setItem]
+     * @property stack the ItemStack that represents this item
      * @property replenishOnDeath whether to replenish the item up to the original amount when the player dies
-     * @property mcMaterial the [Material] this item represents
-     * @property ssItemID the ID of the plugin item this item represents
      * @throws IllegalArgumentException if mcMaterial and ssItemID are not defined, or both are defined
      */
     class Item(
-        val amount: Int,
-        val inventorySlot: Int,
+        val slot: Int,
+        val stack: ItemStack,
         val replenishOnDeath: Boolean,
-        val mcMaterial: Material?,
-        val ssItemID: String?,
     ) {
         init {
-            require(mcMaterial != null || ssItemID != null) { "either mcMaterial or ssItemID must be defined" }
-            require(mcMaterial == null || ssItemID == null) { "only one of mcMaterial and ssItemID can exist" }
-            require(inventorySlot in 0..39) { "invalid inventory slot" }
+            require(slot in 0..39) { "invalid inventory slot" }
         }
+
+        val isArmor
+            get() = slot >= 36
 
         /**
          * Gets the item represented as an [ItemStack].
-         * Returns a stick named "INVALID ITEM" if the custom item doesn't exist.
          *
          * @return the ItemStack
          */
-        fun get(amount: Int = this.amount): ItemStack {
-            if (mcMaterial != null) {
-                return ItemStack(mcMaterial, amount)
-            } else {
-                val item = ItemManager.getItem(ssItemID!!)
-                if (item == null) {
-                    val h = ItemStack(Material.STICK, 1)
-                    val meta = h.itemMeta
-                    meta.displayName = "${ChatColor.RED}${ChatColor.BOLD}INVALID ITEM"
-                    h.itemMeta = meta
-                    return h
-                }
-                return item.data.get(amount)
-            }
+        fun get(amount: Int? = null): ItemStack {
+            val st = stack.clone()
+            if (amount == null) return st
+            st.amount = amount
+            return st
         }
     }
 }

@@ -6,6 +6,8 @@ import dev.dejvokep.boostedyaml.settings.dumper.DumperSettings
 import dev.dejvokep.boostedyaml.settings.loader.LoaderSettings
 import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings
 import me.cirnoslab.smashsumo.SmashSumo
+import me.cirnoslab.smashsumo.Utils
+import me.cirnoslab.smashsumo.Utils.toBase64
 import java.io.File
 
 /**
@@ -52,14 +54,52 @@ object KitManager {
      *
      * @return the number of kits loaded
      */
+    @Suppress("UNCHECKED_CAST")
     fun loadKitList(): Int {
-        TODO("not implemented")
+        kits.clear()
+        kitF.getMapList("kits").forEach { map ->
+            val name = map["name"] as String
+            val mapItem = map["items"] as List<Map<String, *>>
+            val items = mutableListOf<Kit.Item>()
+
+            mapItem.forEach { r ->
+                val slot = r["slot"] as Int
+                val replenishOnDeath = r["replenishOnDeath"] as Boolean
+                val nbt = r["nbt"] as String
+
+                val item = Kit.Item(slot, Utils.deserializeItemStack(nbt), replenishOnDeath)
+                items.add(item)
+            }
+
+            val kit = Kit(name, items)
+            kits[name] = kit
+        }
+        return kits.size
     }
 
     /**
      * Saves the internal storage to disk.
      */
     fun saveKits() {
-        TODO("not implemented")
+        val kitList = mutableListOf<Map<String, Any>>()
+        kits.values.forEach { kit ->
+            val map = mutableMapOf<String, Any>()
+            map["name"] = kit.name
+            val mapItem = mutableListOf<Map<String, Any>>()
+
+            kit.items.forEach { item ->
+                mapItem.add(
+                    mapOf(
+                        "slot" to item.slot,
+                        "replenishOnDeath" to item.replenishOnDeath,
+                        "nbt" to item.get().toBase64()!!,
+                    ),
+                )
+            }
+            map["items"] = mapItem
+            kitList.add(map)
+        }
+        kitF.set("kits", kitList)
+        kitF.save()
     }
 }

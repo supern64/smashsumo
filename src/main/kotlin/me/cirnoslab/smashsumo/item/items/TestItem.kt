@@ -37,6 +37,7 @@ class TestItem : Item() {
 
     companion object : ItemData() {
         override val id = "base.test"
+        override val displayName = "Test Item"
 
         override fun get(amount: Int): ItemStack {
             val stack = ItemStack(Material.DIAMOND_HELMET, amount)

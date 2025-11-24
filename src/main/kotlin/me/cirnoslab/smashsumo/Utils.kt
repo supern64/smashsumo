@@ -1,8 +1,15 @@
 package me.cirnoslab.smashsumo
 
+import net.minecraft.server.v1_8_R3.NBTCompressedStreamTools
+import net.minecraft.server.v1_8_R3.NBTTagCompound
 import org.bukkit.Location
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer
+import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import kotlin.io.encoding.Base64
 import kotlin.math.sqrt
 
 /**
@@ -129,5 +136,38 @@ object Utils {
             }
         }
         return count
+    }
+
+    /**
+     * Serializes this ItemStack's NBT data into Base64.
+     *
+     * @receiver the ItemStack
+     * @return the Base64 string
+     */
+    fun ItemStack.toBase64(): String? {
+        val nmsIS = CraftItemStack.asNMSCopy(this) ?: return null
+        val outputStream = ByteArrayOutputStream()
+        val outputTag = NBTTagCompound()
+
+        nmsIS.save(outputTag)
+        NBTCompressedStreamTools.a(outputTag, outputStream)
+        return Base64.encode(outputStream.toByteArray())
+    }
+
+    /**
+     * Deserializes an ItemStack's NBT data.
+     *
+     * @param s the Base64 string to deserialize
+     * @return the ItemStack
+     */
+    fun deserializeItemStack(s: String): ItemStack {
+        val inputBA = Base64.decode(s)
+        val inputStream = ByteArrayInputStream(inputBA)
+
+        val nbt = NBTCompressedStreamTools.a(inputStream)
+        return CraftItemStack.asBukkitCopy(
+            net.minecraft.server.v1_8_R3.ItemStack
+                .createStack(nbt),
+        )
     }
 }
