@@ -39,8 +39,21 @@ class Kit(
      */
     fun replenish(p: Player) {
         for (item in items) {
+            val i = item.get()
             if (!item.replenishOnDeath) continue
-            p.inventory.setItem(item.inventorySlot, item.get())
+            if (p.inventory.contains(i)) continue
+
+            // complete inventory
+            val amount = p.inventory
+                .filter { r -> r.isSimilar(i) }
+                .map { r -> r.amount }
+                .reduce { a, b -> a + b }
+
+            if (amount == 0) {
+                p.inventory.setItem(item.inventorySlot, i)
+            } else {
+                p.inventory.addItem(item.get(item.amount - amount))
+            }
         }
     }
 
@@ -74,7 +87,7 @@ class Kit(
          *
          * @return the ItemStack
          */
-        fun get(): ItemStack {
+        fun get(amount: Int = this.amount): ItemStack {
             if (mcMaterial != null) {
                 return ItemStack(mcMaterial, amount)
             } else {
