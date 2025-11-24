@@ -1,14 +1,9 @@
 package me.cirnoslab.smashsumo.listeners
 
-import io.github.theluca98.textapi.ActionBar
 import me.cirnoslab.smashsumo.game.Game
 import me.cirnoslab.smashsumo.game.GameManager
 import me.cirnoslab.smashsumo.game.GamePlayer
 import me.cirnoslab.smashsumo.game.GameSettings
-import me.cirnoslab.smashsumo.game.HitValue
-import me.cirnoslab.smashsumo.item.ItemManager
-import me.cirnoslab.smashsumo.item.events.ItemArmorEvent
-import me.cirnoslab.smashsumo.item.events.ItemHitPlayerEvent
 import org.bukkit.GameMode
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
@@ -23,10 +18,6 @@ import org.bukkit.event.entity.EntityRegainHealthEvent
 import org.bukkit.event.entity.FoodLevelChangeEvent
 import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.event.player.PlayerToggleFlightEvent
-import org.bukkit.util.Vector
-import kotlin.math.roundToInt
-import kotlin.math.sign
-import kotlin.random.Random
 
 /**
  * Primary listener to implement player mechanics
@@ -45,8 +36,7 @@ class PlayerMechanicListener : Listener {
 
         // bonus double jump reset
         if ((e.player as Entity).isOnGround && gp.game.state != Game.GameState.COUNTDOWN) {
-            gp.jumpPhase = 0
-            gp.player.allowFlight = true
+            gp.resetJump()
         }
     }
 
@@ -87,58 +77,10 @@ class PlayerMechanicListener : Listener {
             return
         }
 
-        // initial damage calculation
-        val aVertMultiplier = -a.velocity.y.coerceAtMost(0.0)
-        val aMomentum = aGP.speed
-        val initialDamage = Random.nextDouble(2.0, 3.0) + aMomentum * Random.nextDouble(10.0, 15.0)
-        val hitValue = HitValue(game.settings.knockback, initialDamage)
-
-        // process items
-        val aItem = ItemManager.getItem(a.itemInHand)
-        aItem?.hit(ItemHitPlayerEvent(aGP, a, dGP, d, hitValue, e))
-
-        d.inventory.armorContents.forEach { i ->
-            val dItem = ItemManager.getItem(i)
-            dItem?.damage(ItemArmorEvent(aGP, a, dGP, d, hitValue, e))
-        }
-
-        dGP.damage += hitValue.damage
+        dGP.hit(aGP, dEvent = e)
 
         e.isCancelled = true
         d.damage(0.0)
-        d.noDamageTicks = hitValue.noDamageTicks
-        d.health = dGP.displayHealth
-        val dKnockback =
-            a.location.direction
-                .normalize()
-                .setY(if ((d as Entity).isOnGround) hitValue.initialY else hitValue.initialY * sign(a.location.direction.y))
-                // cumulative damage
-                .multiply(
-                    Vector(
-                        dGP.damage * hitValue.xzDamageMultiplier,
-                        dGP.damage * hitValue.yDamageMultiplier,
-                        dGP.damage * hitValue.xzDamageMultiplier,
-                    ),
-                )
-                // current attack
-                .multiply(
-                    Vector(
-                        (aMomentum + 1) * hitValue.xzMomentumMultiplier,
-                        (aVertMultiplier + 1) * hitValue.yMomentumMultiplier,
-                        (aMomentum + 1) * hitValue.xzMomentumMultiplier,
-                    ),
-                )
-
-        if (dKnockback.lengthSquared() < hitValue.minimumSize * hitValue.minimumSize) {
-            dKnockback.normalize().multiply(hitValue.minimumSize)
-        }
-        d.velocity = dKnockback
-
-        ActionBar(dGP.actionBarDisplay).send(d)
-        dGP.game.scoreboard
-            .getObjective("%")
-            .getScore(d.name)
-            .score = dGP.damage.roundToInt()
     }
 
     /**
@@ -215,13 +157,6 @@ class PlayerMechanicListener : Listener {
         if (gp.player.gameMode == GameMode.CREATIVE || gp.player.gameMode == GameMode.SPECTATOR) return
 
         e.isCancelled = true
-        e.player.isFlying = false
-
-        e.player.velocity =
-            e.player.location.direction
-                .multiply(1.1)
-                .setY(1.15) // 1.5
-        if (gp.jumpPhase == 1) e.player.allowFlight = false
-        gp.jumpPhase += 1
+        gp.jump()
     }
 }

@@ -1,6 +1,7 @@
 package me.cirnoslab.smashsumo.game
 
 import fr.mrmicky.fastboard.FastBoard
+import io.github.theluca98.textapi.ActionBar
 import me.cirnoslab.smashsumo.Config
 import me.cirnoslab.smashsumo.Config.Style.P
 import me.cirnoslab.smashsumo.Config.Style.S
@@ -8,6 +9,9 @@ import me.cirnoslab.smashsumo.Config.Style.teamColors
 import me.cirnoslab.smashsumo.SmashSumo.Companion.SCOREBOARD_LINE
 import me.cirnoslab.smashsumo.Utils
 import me.cirnoslab.smashsumo.Utils.setAbsorptionHearts
+import me.cirnoslab.smashsumo.item.ItemManager
+import me.cirnoslab.smashsumo.item.events.ItemArmorEvent
+import me.cirnoslab.smashsumo.item.events.ItemHitPlayerEvent
 import me.cirnoslab.smashsumo.kit.Kit
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor.BOLD
@@ -19,13 +23,18 @@ import org.bukkit.ChatColor.YELLOW
 import org.bukkit.GameMode
 import org.bukkit.Location
 import org.bukkit.Sound
+import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
+import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.scoreboard.Objective
 import org.bukkit.scoreboard.Team
+import org.bukkit.util.Vector
 import kotlin.math.roundToInt
+import kotlin.math.sign
 import kotlin.math.sqrt
+import kotlin.random.Random
 
 /**
  * Represents the game state of a player in a [Game]
@@ -228,7 +237,7 @@ class GamePlayer(
         player.isFlying = false
 
         player.addPotionEffect(PotionEffect(PotionEffectType.JUMP, Int.MAX_VALUE, 1))
-        player.inventory.clear()
+        clearInventory()
     }
 
     /**
@@ -260,6 +269,119 @@ class GamePlayer(
     }
 
     /**
+     * Processes a hit by another player.
+     *
+     * @param aGP the attacker's GamePlayer
+     * @param hitValue the HitValue to use for this hit
+     * @param processItems whether to take both player's items into consideration
+     * @param dEvent the EntityDamageByEntityEvent that triggered this hit
+     */
+    fun hit(
+        aGP: GamePlayer,
+        hitValue: HitValue? = null,
+        processItems: Boolean = true,
+        dEvent: EntityDamageByEntityEvent? = null,
+    ) {
+        var hv = hitValue
+        val aVertMultiplier =
+            -aGP.player.velocity.y
+                .coerceAtMost(0.0)
+        val aMomentum = aGP.speed
+        // initial damage calculation
+        if (hv == null) {
+            val initialDamage = Random.nextDouble(2.0, 3.0) + aMomentum * Random.nextDouble(10.0, 15.0)
+            hv = HitValue(game.settings.knockback, initialDamage)
+        }
+
+        if (processItems) {
+            val aItem = ItemManager.getItem(aGP.player.itemInHand)
+            aItem?.hit(ItemHitPlayerEvent(aGP, this, hv, dEvent))
+
+            player.inventory.armorContents.forEach { i ->
+                val dItem = ItemManager.getItem(i)
+                dItem?.damage(ItemArmorEvent(aGP, this, hv, dEvent))
+            }
+        }
+
+        damage(hv.damage)
+        player.noDamageTicks = hv.noDamageTicks
+        knock(aGP, hv, aVertMultiplier, aMomentum)
+    }
+
+    /**
+     * Applies damage and updates the display.
+     *
+     * @param damage the damage to apply
+     */
+    fun damage(damage: Double) {
+        this.damage += damage
+        player.health = displayHealth
+        updateDisplays()
+    }
+
+    /**
+     * Applies vanilla knockback from a player.
+     *
+     * @param aGP the player attacking
+     * @param hitValue the HitValue to use
+     * @param aVertMultiplier the vertical momentum multiplier to use
+     * @param aMomentum the total momentum multiplier to use
+     */
+    fun knock(
+        aGP: GamePlayer,
+        hitValue: HitValue,
+        aVertMultiplier: Double,
+        aMomentum: Double,
+    ) {
+        val dKnockback =
+            aGP.player.location.direction
+                .normalize()
+                .setY(if ((player as Entity).isOnGround) hitValue.initialY else hitValue.initialY * sign(aGP.player.location.direction.y))
+                // cumulative damage
+                .multiply(
+                    Vector(
+                        damage * hitValue.xzDamageMultiplier,
+                        damage * hitValue.yDamageMultiplier,
+                        damage * hitValue.xzDamageMultiplier,
+                    ),
+                )
+                // current attack
+                .multiply(
+                    Vector(
+                        (aMomentum + 1) * hitValue.xzMomentumMultiplier,
+                        (aVertMultiplier + 1) * hitValue.yMomentumMultiplier,
+                        (aMomentum + 1) * hitValue.xzMomentumMultiplier,
+                    ),
+                )
+
+        if (dKnockback.lengthSquared() < hitValue.minimumSize * hitValue.minimumSize) {
+            dKnockback.normalize().multiply(hitValue.minimumSize)
+        }
+        player.velocity = dKnockback
+    }
+
+    /**
+     * Does an extra midair jump. The maximum is 3 (until [resetJump] is called)
+     */
+    fun jump() {
+        player.isFlying = false
+        player.velocity =
+            player.location.direction
+                .multiply(1.1)
+                .setY(1.15)
+        if (jumpPhase == 1) player.allowFlight = false
+        jumpPhase += 1
+    }
+
+    /**
+     * Makes a player able to jump again.
+     */
+    fun resetJump() {
+        jumpPhase = 0
+        player.allowFlight = true
+    }
+
+    /**
      * Kills a player to prepare them for respawn. Called by [Game.kill]
      *
      * @param respawnLocation an available respawn location
@@ -269,14 +391,14 @@ class GamePlayer(
         damage = 0.0
         player.health = 20.0
         player.setAbsorptionHearts(lives * 2.0f)
-        updateScoreboard()
+        updateDisplays()
 
         // dead check
         if (lives == 0) {
             state = PlayerState.SPECTATING
             if (game.getActivePlayers().size == 1) return // let Game handle the end routine
             player.gameMode = GameMode.SPECTATOR
-            player.inventory.clear()
+            clearInventory()
             player.sendMessage("${RED}You have been eliminated! You are now a spectator.")
         } else {
             player.gameMode = GameMode.SPECTATOR
@@ -306,7 +428,7 @@ class GamePlayer(
     fun end() {
         state = PlayerState.ENDING
         player.gameMode = GameMode.ADVENTURE
-        player.inventory.clear()
+        clearInventory()
     }
 
     /**
@@ -321,15 +443,24 @@ class GamePlayer(
         player.isFlying = false
         player.scoreboard = Bukkit.getScoreboardManager().mainScoreboard
         player.gameMode = Config.lobbyGameMode
-        player.inventory.clear()
+        clearInventory()
     }
 
     /**
-     * Updates a player's scoreboard. Only usable after game has counted down.
+     * Updates a player's displays. Only usable after game has counted down.
      */
-    fun updateScoreboard() {
+    fun updateDisplays() {
         sbTeam.suffix = if (lives > 0) " $lifeString" else " $GRAY[DEAD]"
         sbHealth.getScore(player.name).score = damage.roundToInt()
+        ActionBar(actionBarDisplay).send(player)
+    }
+
+    fun clearInventory() {
+        player.inventory.clear()
+        player.inventory.helmet = null
+        player.inventory.chestplate = null
+        player.inventory.leggings = null
+        player.inventory.boots = null
     }
 
     /**

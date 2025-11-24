@@ -13,13 +13,13 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent
  * @property defender the [GamePlayer] of the player who was attacked
  * @property defender the [Player] of the player who was attacked
  * @property hit the [HitValue] to use for this hit
- * @property raw the [EntityDamageByEntityEvent] that triggered this
+ * @property raw the [EntityDamageByEntityEvent] that triggered this, will be null if hit by other interaction
  */
 data class ItemArmorEvent(
     val attacker: GamePlayer,
-    val mcAttacker: Player,
     val defender: GamePlayer,
-    val mcDefender: Player,
     val hit: HitValue,
-    val raw: EntityDamageByEntityEvent,
+    val raw: EntityDamageByEntityEvent?,
+    val mcAttacker: Player = attacker.player,
+    val mcDefender: Player = defender.player,
 )
