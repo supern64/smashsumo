@@ -27,7 +27,7 @@ object ArenaCommands {
         }
 
         if (args.size < 2) {
-            s.sendMessage("${P}Usage: $S/smashsumo arena [select|list|create|save|center|spawn|respawn|side|bottom|top|info]")
+            s.sendMessage("${P}Usage: $S/smashsumo arena [select|list|create|save|center|spawn|respawn|side|bottom|top|info|delete]")
             return true
         }
 
@@ -184,12 +184,36 @@ object ArenaCommands {
                     """.trimMargin(),
                 )
             }
+            "delete" -> {
+                if (args.size < 3) {
+                    val targetName = selectedArena[s.uniqueId]!!.name
+                    if (!selectedArena.containsKey(s.uniqueId)) {
+                        s.sendMessage("${P}No arena selected. (Or specify arena name)")
+                        return true
+                    }
+                    if (ArenaManager.arenas.containsKey(targetName)) {
+                        ArenaManager.arenas.remove(targetName)
+                        ArenaManager.saveArenas()
+                        s.sendMessage("${P}Arena ${S}$targetName ${P}removed.")
+                    } else {
+                        s.sendMessage("${P}Cannot remove this arena as it has not been saved.")
+                    }
+                    return true
+                }
+                if (!ArenaManager.arenas.containsKey(args[2])) {
+                    s.sendMessage("${P}Arena ${S}${args[2]} ${P}does not exist.")
+                    return true
+                }
+                ArenaManager.arenas.remove(args[2])
+                ArenaManager.saveArenas()
+                s.sendMessage("${P}Arena ${S}${args[2]} ${P}removed.")
+            }
             "list" -> {
                 s.sendMessage("${P}Available arenas: ${S}${ArenaManager.arenas.keys.joinToString(", ")}")
             }
             else -> {
                 s.sendMessage(
-                    "${P}Unknown subcommand. Usage: $S/smashsumo arena [select|list|create|save|center|spawn|respawn|side|bottom|top|info]",
+                    "${P}Unknown subcommand. Usage: $S/smashsumo arena [select|list|create|save|center|spawn|respawn|side|bottom|top|info|delete]",
                 )
             }
         }
@@ -204,13 +228,23 @@ object ArenaCommands {
             when (args.size) {
                 2 -> {
                     if (s is Player && selectedArena.containsKey(s.uniqueId)) {
-                        listOf("select", "list", "create", "save", "center", "spawn", "respawn", "side", "bottom", "top", "info")
+                        listOf("select", "list", "create", "save", "center", "spawn", "respawn", "side", "bottom", "top", "info", "delete")
                     } else {
                         listOf("select", "list", "create", "info")
                     }
                 }
                 3 -> {
-                    if (arrayOf("select", "list", "info").contains(args[1].lowercase())) ArenaManager.arenas.keys.toList() else listOf()
+                    if (arrayOf(
+                            "select",
+                            "list",
+                            "info",
+                            "delete",
+                        ).contains(args[1].lowercase())
+                    ) {
+                        ArenaManager.arenas.keys.toList()
+                    } else {
+                        listOf()
+                    }
                 }
                 else -> listOf()
             }
