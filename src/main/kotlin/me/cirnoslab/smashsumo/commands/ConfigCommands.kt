@@ -34,7 +34,7 @@ object ConfigCommands {
                 val arenaCount = ArenaManager.reload()
                 val kitCount = KitManager.reload()
                 Config.reload()
-                s.sendMessage("${P}Configuration reloaded. ${S}$arenaCount ${P}arenas and $kitCount kits loaded.")
+                s.sendMessage("${P}Configuration reloaded. ${S}$arenaCount ${P}arenas and ${S}$kitCount ${P}kits loaded.")
                 if (GameManager.games.isNotEmpty()) s.sendMessage("$P* Settings will only apply to new games.")
                 return true
             }

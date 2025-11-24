@@ -57,7 +57,7 @@ object DebugCommands {
         val completions =
             when (args.size) {
                 2 -> listOf("item")
-                3 -> if (args[2] == "item") ItemManager.items.keys else listOf()
+                3 -> if (args[1] == "item") ItemManager.items.keys.toList() else listOf()
                 else -> listOf()
             }
         return completions.sortedByDescending { a -> Utils.matchPrefixCount(a, args[args.size - 1]) }
