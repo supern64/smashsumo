@@ -29,7 +29,6 @@ abstract class Item : Listener {
      * Calls whenever the player interacts with an item
      *
      * @param e the [ItemInteractEvent]
-     * @return whether to cancel the PlayerInteractEvent or not
      */
     open fun interact(e: ItemInteractEvent) {}
 
@@ -37,7 +36,6 @@ abstract class Item : Listener {
      * Calls whenever a player drops the item
      *
      * @param e the [ItemInteractEvent]
-     * @return whether to cancel the PlayerDropItemEvent or not
      */
     open fun drop(e: ItemDropEvent) {}
 
@@ -45,7 +43,6 @@ abstract class Item : Listener {
      * Calls whenever a player picks up an item
      *
      * @param e the [ItemPickupEvent]
-     * @return whether to cancel the PlayerPickupItemEvent or not
      */
     open fun pickup(e: ItemPickupEvent) {}
 
@@ -53,7 +50,6 @@ abstract class Item : Listener {
      * Calls whenever a player attacks another player with this item
      *
      * @param e the [ItemHitPlayerEvent]
-     * @return whether to cancel the attack or not
      */
     open fun hit(e: ItemHitPlayerEvent) {}
 
@@ -61,7 +57,6 @@ abstract class Item : Listener {
      * Calls whenever a player is attacked while wearing this item
      *
      * @param e the [ItemArmorEvent]
-     * @return whether to cancel the attack or not
      */
     open fun damage(e: ItemArmorEvent) {}
 
