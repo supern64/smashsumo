@@ -90,7 +90,7 @@ object RootCommands {
                     s.sendMessage("${P}The game has already started.")
                     return true
                 }
-                if (game.gamePlayers.size < 2 && (args.size < 2 || args[1].lowercase() != "force")) {
+                if (game.gamePlayers.size < 2) {
                     s.sendMessage("${P}At least 2 players are required to start the game.")
                     return true
                 }
