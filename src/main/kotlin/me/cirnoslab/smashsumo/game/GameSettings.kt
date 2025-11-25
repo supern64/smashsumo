@@ -23,6 +23,10 @@ data class GameSettings(
      */
     val platformDespawnTime: Long,
     /**
+     * The time items stay after being dropped by a player before despawning (ticks)
+     */
+    val itemDespawnTime: Long,
+    /**
      * The [KnockbackConfig] used for the game
      */
     val knockback: KnockbackConfig,

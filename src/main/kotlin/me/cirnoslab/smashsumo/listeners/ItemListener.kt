@@ -1,5 +1,6 @@
 package me.cirnoslab.smashsumo.listeners
 
+import me.cirnoslab.smashsumo.SmashSumo
 import me.cirnoslab.smashsumo.game.GameManager
 import me.cirnoslab.smashsumo.game.GamePlayer
 import me.cirnoslab.smashsumo.item.ItemManager
@@ -11,6 +12,7 @@ import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerDropItemEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerPickupItemEvent
+import org.bukkit.scheduler.BukkitRunnable
 
 /**
  * Primary listener for item usage
@@ -38,6 +40,13 @@ class ItemListener : Listener {
     fun onDrop(e: PlayerDropItemEvent) {
         val gp = GameManager.getGamePlayer(e.player) ?: return
         if (gp.state != GamePlayer.PlayerState.IN_GAME) return
+
+        object : BukkitRunnable() {
+            override fun run() {
+                if (e.itemDrop.isValid) e.itemDrop.remove()
+            }
+        }.runTaskLater(SmashSumo.plugin, gp.game.settings.itemDespawnTime)
+
         val item = ItemManager.getItem(e.itemDrop.itemStack) ?: return
         item.drop(ItemDropEvent(gp, e.player, e))
     }

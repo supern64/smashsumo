@@ -120,6 +120,12 @@ object Config {
             get() = config.getLong("game.platform-despawn-time", 3000) / 50
 
         /**
+         * The time items stay after being dropped by a player before despawning (ticks)
+         */
+        val itemDespawnTime: Long
+            get() = config.getLong("game.item-despawn-time", 3000) / 50
+
+        /**
          * The kit all players will have by default, if this is null no kit will be given
          * If the kit name in the config is invalid, this will be set to null
          */

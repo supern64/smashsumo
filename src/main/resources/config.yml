@@ -24,6 +24,8 @@ game:
   respawn-time: 1000
   # How long it should take for the respawn platform to automatically despawn (multiple of 50ms, default: 3000)
   platform-despawn-time: 3000
+  # How long it should take for items dropped by players to despawn (multiple of 50ms, default: 3000)
+  item-despawn-time: 3000
   # The name of the kit all players will have by default, if this is null no kit will be given (default: null)
   default-kit: null
   # Knockback settings

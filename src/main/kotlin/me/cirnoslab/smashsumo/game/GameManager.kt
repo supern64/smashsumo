@@ -66,6 +66,7 @@ object GameManager {
                     Config.Game.allowBlock,
                     Config.Game.respawnTime,
                     Config.Game.platformDespawnTime,
+                    Config.Game.itemDespawnTime,
                     Config.Game.knockback,
                     Config.Game.defaultKit,
                 ),
