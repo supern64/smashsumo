@@ -1,7 +1,6 @@
 package me.cirnoslab.smashsumo.commands
 
 import me.cirnoslab.smashsumo.Config.Style.P
-import me.cirnoslab.smashsumo.Config.Style.S
 import me.cirnoslab.smashsumo.Utils
 import me.cirnoslab.smashsumo.item.ItemManager
 import org.bukkit.command.CommandSender

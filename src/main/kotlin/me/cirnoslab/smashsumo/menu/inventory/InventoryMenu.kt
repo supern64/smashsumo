@@ -18,7 +18,7 @@ import org.bukkit.inventory.ItemStack
 open class InventoryMenu(
     val owner: Player,
     title: String,
-    val options: Array<ItemStack>
+    val options: Array<ItemStack>,
 ) {
     /*
           B B B B B B B B B
@@ -37,7 +37,7 @@ open class InventoryMenu(
         require(options.size in 1..28) { "only 1-28 options are supported" }
 
         // create filler blocks
-        val filler = ItemStack(Material.STAINED_GLASS_PANE, 1, 15);
+        val filler = ItemStack(Material.STAINED_GLASS_PANE, 1, 15)
         val fMeta = filler.itemMeta
         fMeta.displayName = " "
         filler.itemMeta = fMeta
@@ -57,7 +57,10 @@ open class InventoryMenu(
         owner.updateInventory()
     }
 
-    open fun click(index: Int?, e: InventoryClickEvent) {}
+    open fun click(
+        index: Int?,
+        e: InventoryClickEvent,
+    ) {}
 
     open fun close(e: InventoryCloseEvent) {}
 }
