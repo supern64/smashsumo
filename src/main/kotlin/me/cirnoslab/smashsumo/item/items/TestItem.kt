@@ -1,7 +1,6 @@
 package me.cirnoslab.smashsumo.item.items
 
 import me.cirnoslab.smashsumo.item.Item
-import me.cirnoslab.smashsumo.item.ItemData
 import me.cirnoslab.smashsumo.item.events.ItemArmorEvent
 import me.cirnoslab.smashsumo.item.events.ItemDropEvent
 import me.cirnoslab.smashsumo.item.events.ItemHitPlayerEvent

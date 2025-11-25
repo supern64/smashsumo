@@ -65,68 +65,68 @@ abstract class Item : Listener {
     companion object : ItemData() {
         override val id = "base.generic_item"
     }
-}
-
-/**
- * Represents an [Item]'s companion object which contains its data.
- * Should be used within every single item.
- */
-abstract class ItemData {
-    /**
-     * The ID of the item (must be unique)
-     */
-    abstract val id: String
 
     /**
-     * The display name used in-game
+     * Represents an [Item]'s companion object which contains its data.
+     * Should be used within every single item.
      */
-    open val displayName: String = id
+    abstract class ItemData {
+        /**
+         * The ID of the item (must be unique)
+         */
+        abstract val id: String
 
-    /**
-     * Gets an [ItemStack] of this item.
-     * If you override this, you are responsible for modifying the NBT yourself.
-     *
-     * @see withNBT
-     * @param amount how many of the item to get
-     * @return the ItemStack of this item
-     */
-    open fun get(amount: Int = 1): ItemStack {
-        val stack = ItemStack(Material.STICK, amount)
-        return withNBT(stack)
-    }
+        /**
+         * The display name used in-game
+         */
+        open val displayName: String = id
 
-    /**
-     * Returns whether an ItemStack has the required NBT tag for this item.
-     *
-     * @param i the ItemStack
-     * @return true if NBT tag exists, false otherwise
-     */
-    fun hasNBT(i: ItemStack): Boolean {
-        val nmsI = CraftItemStack.asNMSCopy(i)
-        if (nmsI == null || !nmsI.hasTag()) return false
-        val compound = nmsI.tag
-        val detectedID = compound.getCompound("smashsumo").getString("item_id")
-        return detectedID.isNotEmpty() && detectedID.equals(id)
-    }
+        /**
+         * Gets an [ItemStack] of this item.
+         * If you override this, you are responsible for modifying the NBT yourself.
+         *
+         * @see withNBT
+         * @param amount how many of the item to get
+         * @return the ItemStack of this item
+         */
+        open fun get(amount: Int = 1): ItemStack {
+            val stack = ItemStack(Material.STICK, amount)
+            return withNBT(stack)
+        }
 
-    /**
-     * Attaches an NBT tag with this item's ID to an ItemStack.
-     *
-     * @param i the ItemStack
-     * @return the ItemStack with NBT Tag
-     */
-    fun withNBT(i: ItemStack): ItemStack {
-        val meta = i.itemMeta
-        meta.displayName = displayName
-        i.itemMeta = meta
+        /**
+         * Returns whether an ItemStack has the required NBT tag for this item.
+         *
+         * @param i the ItemStack
+         * @return true if NBT tag exists, false otherwise
+         */
+        fun hasNBT(i: ItemStack): Boolean {
+            val nmsI = CraftItemStack.asNMSCopy(i)
+            if (nmsI == null || !nmsI.hasTag()) return false
+            val compound = nmsI.tag
+            val detectedID = compound.getCompound("smashsumo").getString("item_id")
+            return detectedID.isNotEmpty() && detectedID.equals(id)
+        }
 
-        val nmsI = CraftItemStack.asNMSCopy(i)
-        val itemC = if (nmsI.hasTag()) nmsI.tag else NBTTagCompound()
-        val ssC = itemC.getCompound("smashsumo")
-        ssC.setString("item_id", id)
-        itemC.set("smashsumo", ssC)
-        nmsI.tag = itemC
+        /**
+         * Attaches an NBT tag with this item's ID to an ItemStack.
+         *
+         * @param i the ItemStack
+         * @return the ItemStack with NBT Tag
+         */
+        fun withNBT(i: ItemStack): ItemStack {
+            val meta = i.itemMeta
+            meta.displayName = displayName
+            i.itemMeta = meta
 
-        return CraftItemStack.asBukkitCopy(nmsI)
+            val nmsI = CraftItemStack.asNMSCopy(i)
+            val itemC = if (nmsI.hasTag()) nmsI.tag else NBTTagCompound()
+            val ssC = itemC.getCompound("smashsumo")
+            ssC.setString("item_id", id)
+            itemC.set("smashsumo", ssC)
+            nmsI.tag = itemC
+
+            return CraftItemStack.asBukkitCopy(nmsI)
+        }
     }
 }
