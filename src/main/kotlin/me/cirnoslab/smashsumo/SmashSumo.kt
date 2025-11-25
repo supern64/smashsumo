@@ -3,7 +3,7 @@ package me.cirnoslab.smashsumo
 import me.cirnoslab.smashsumo.arena.ArenaManager
 import me.cirnoslab.smashsumo.commands.ArenaCommands
 import me.cirnoslab.smashsumo.commands.ConfigCommands
-import me.cirnoslab.smashsumo.commands.DebugCommands
+import me.cirnoslab.smashsumo.commands.ItemCommands
 import me.cirnoslab.smashsumo.commands.KitCommands
 import me.cirnoslab.smashsumo.commands.RootCommands
 import me.cirnoslab.smashsumo.game.GameManager
@@ -63,7 +63,7 @@ class SmashSumo : JavaPlugin() {
         return ArenaCommands.handle(sender, args) ||
             ConfigCommands.handle(sender, args) ||
             KitCommands.handle(sender, args) ||
-            DebugCommands.handle(sender, args) ||
+            ItemCommands.handle(sender, args) ||
             RootCommands.handle(sender, args)
     }
 
@@ -77,7 +77,7 @@ class SmashSumo : JavaPlugin() {
         if (ArenaCommands.canComplete(args)) return ArenaCommands.complete(sender, args)
         if (ConfigCommands.canComplete(args)) return ConfigCommands.complete(args)
         if (KitCommands.canComplete(args)) return KitCommands.complete(args)
-        if (DebugCommands.canComplete(args)) return DebugCommands.complete(args)
+        if (ItemCommands.canComplete(args)) return ItemCommands.complete(args)
         return RootCommands.complete(sender, args)
     }
 
