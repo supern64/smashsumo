@@ -24,7 +24,7 @@ object KitCommands {
         }
 
         if (args.size < 2) {
-            s.sendMessage("${P}Usage: $S/smashsumo kit [save|equip|list|delete]")
+            s.sendMessage("${P}Usage: $S/smashsumo kit [save|equip|list|icon|delete]")
             return true
         }
 
@@ -62,6 +62,25 @@ object KitCommands {
                 KitManager.kits[name]!!.apply(s)
                 s.sendMessage("${P}Loaded kit ${S}$name$P.")
             }
+            "icon" -> {
+                if (args.size < 3) {
+                    s.sendMessage("${P}Please specify a kit name.")
+                    return true
+                }
+                if (s.inventory.itemInHand == null) {
+                    s.sendMessage("${P}You must have an item in hand to set as an icon.")
+                    return true
+                }
+                val name = args[2]
+                if (!KitManager.kits.containsKey(name)) {
+                    s.sendMessage("${P}Kit ${S}$name ${P}does not exist.")
+                    return true
+                }
+                val currKit = KitManager.kits[name]!!
+                KitManager.kits[name] = Kit(currKit.name, s.inventory.itemInHand.type, currKit.items)
+                KitManager.saveKits()
+                s.sendMessage("${P}Set icon for kit ${S}$name$P to item in hand.")
+            }
             "list" -> {
                 s.sendMessage("${P}Available kits: ${S}${KitManager.kits.keys.joinToString(", ")}")
             }
@@ -80,7 +99,7 @@ object KitCommands {
             }
             else -> {
                 s.sendMessage(
-                    "${P}Unknown subcommand. Usage: $S/smashsumo kit [save|equip|list|delete]",
+                    "${P}Unknown subcommand. Usage: $S/smashsumo kit [save|equip|list|icon|delete]",
                 )
             }
         }
@@ -90,8 +109,8 @@ object KitCommands {
     fun complete(args: Array<out String>): List<String> {
         val completions =
             when (args.size) {
-                2 -> listOf("save", "equip", "list", "delete")
-                3 -> if (listOf("save", "equip", "delete").contains(args[1])) KitManager.kits.keys.toList() else listOf()
+                2 -> listOf("save", "equip", "list", "delete", "icon")
+                3 -> if (listOf("save", "equip", "delete", "icon").contains(args[1])) KitManager.kits.keys.toList() else listOf()
                 else -> listOf()
             }
         return completions.sortedByDescending { a -> Utils.matchPrefixCount(a, args[args.size - 1]) }

@@ -1,6 +1,7 @@
 package me.cirnoslab.smashsumo.kit
 
 import me.cirnoslab.smashsumo.Utils.clearInventory
+import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.PlayerInventory
@@ -13,6 +14,7 @@ import org.bukkit.inventory.PlayerInventory
  */
 class Kit(
     val name: String,
+    val icon: Material,
     val items: List<Item>,
 ) {
     /**
@@ -103,7 +105,7 @@ class Kit(
                 // boots - 36, leggings - 37, chestplate - 38, helmet = 39
                 itemList.add(Item(index + 36, s.clone(), true))
             }
-            return Kit(name, itemList)
+            return Kit(name, Material.PAPER, itemList)
         }
     }
 

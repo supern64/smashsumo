@@ -8,6 +8,7 @@ import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings
 import me.cirnoslab.smashsumo.SmashSumo
 import me.cirnoslab.smashsumo.Utils
 import me.cirnoslab.smashsumo.Utils.toBase64
+import org.bukkit.Material
 import java.io.File
 
 /**
@@ -59,8 +60,11 @@ object KitManager {
         kits.clear()
         kitF.getMapList("kits").forEach { map ->
             val name = map["name"] as String
+            val icon = map["icon"] as String
             val mapItem = map["items"] as List<Map<String, *>>
             val items = mutableListOf<Kit.Item>()
+
+            val matIcon = Material.getMaterial(icon) ?: Material.PAPER
 
             mapItem.forEach { r ->
                 val slot = r["slot"] as Int
@@ -71,7 +75,7 @@ object KitManager {
                 items.add(item)
             }
 
-            val kit = Kit(name, items)
+            val kit = Kit(name, matIcon, items)
             kits[name] = kit
         }
         return kits.size
@@ -85,6 +89,7 @@ object KitManager {
         kits.values.forEach { kit ->
             val map = mutableMapOf<String, Any>()
             map["name"] = kit.name
+            map["icon"] = kit.icon.name
             val mapItem = mutableListOf<Map<String, Any>>()
 
             kit.items.forEach { item ->
