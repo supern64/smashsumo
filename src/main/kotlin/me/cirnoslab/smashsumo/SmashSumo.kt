@@ -12,7 +12,9 @@ import me.cirnoslab.smashsumo.item.ItemManager
 import me.cirnoslab.smashsumo.kit.KitManager
 import me.cirnoslab.smashsumo.listeners.GameListener
 import me.cirnoslab.smashsumo.listeners.ItemListener
+import me.cirnoslab.smashsumo.listeners.MenuListener
 import me.cirnoslab.smashsumo.listeners.PlayerMechanicListener
+import me.cirnoslab.smashsumo.menu.actionitem.ActionItemManager
 import org.bukkit.ChatColor
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
@@ -28,10 +30,14 @@ class SmashSumo : JavaPlugin() {
         server.pluginManager.registerEvents(PlayerMechanicListener(), this)
         server.pluginManager.registerEvents(GameListener(), this)
         server.pluginManager.registerEvents(ItemListener(), this)
+        server.pluginManager.registerEvents(MenuListener(), this)
         HUDManager.SendHUD().runTaskTimer(this, 0L, 5L)
 
         val arenaCount = ArenaManager.init(dataFolder)
+
         ItemManager.init(this)
+        ActionItemManager.init()
+
         val kitCount = KitManager.init(dataFolder)
         Config.init(this)
         log("Plugin enabled. Loaded config with $arenaCount arenas and $kitCount kits.")

@@ -14,6 +14,8 @@ import me.cirnoslab.smashsumo.item.ItemManager
 import me.cirnoslab.smashsumo.item.events.ItemArmorEvent
 import me.cirnoslab.smashsumo.item.events.ItemHitPlayerEvent
 import me.cirnoslab.smashsumo.kit.Kit
+import me.cirnoslab.smashsumo.menu.actionitem.QuitGameItem
+import me.cirnoslab.smashsumo.menu.actionitem.StartGameItem
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor.BOLD
 import org.bukkit.ChatColor.DARK_RED
@@ -239,6 +241,11 @@ class GamePlayer(
 
         player.addPotionEffect(PotionEffect(PotionEffectType.JUMP, Int.MAX_VALUE, 1))
         player.clearInventory()
+
+        if (player.hasPermission("smashsumo.gm")) {
+            player.inventory.setItem(0, StartGameItem.get())
+        }
+        player.inventory.setItem(8, QuitGameItem.get())
     }
 
     /**
@@ -282,7 +289,7 @@ class GamePlayer(
         hitValue: HitValue? = null,
         processItems: Boolean = true,
         dEvent: EntityDamageByEntityEvent? = null,
-    ) {
+    ): HitValue {
         var hv = hitValue
         val aVertMultiplier =
             -aGP.player.velocity.y
@@ -305,8 +312,8 @@ class GamePlayer(
         }
 
         damage(hv.damage)
-        player.noDamageTicks = hv.noDamageTicks
         knock(aGP, hv, aVertMultiplier, aMomentum)
+        return hv
     }
 
     /**

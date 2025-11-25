@@ -77,10 +77,11 @@ class PlayerMechanicListener : Listener {
             return
         }
 
-        dGP.hit(aGP, dEvent = e)
+        val fhv = dGP.hit(aGP, dEvent = e)
 
         e.isCancelled = true
         d.damage(0.0)
+        d.noDamageTicks = fhv.noDamageTicks
     }
 
     /**
