@@ -47,20 +47,54 @@ open class InventoryMenu(
             inventory.setItem(x + (lineCount + 1) * 9, filler)
         }
 
-        for (y in 0..lineCount + 2) {
+        for (y in 0..lineCount + 1) {
             inventory.setItem(y * 9, filler)
             inventory.setItem(y * 9 + 8, filler)
         }
+
+        updateOptions()
     }
 
+    /**
+     * Updates this inventory for the player's owner
+     */
     fun update() {
         owner.updateInventory()
     }
 
+    /**
+     * Generate the options in [inventory]
+     */
+    open fun updateOptions() {
+        var index = 10
+        var inCurrentRow = 0
+        for (option in options) {
+            inventory.setItem(index, option)
+            if (inCurrentRow < 6) {
+                index++
+                inCurrentRow++
+            } else {
+                index += 3
+                inCurrentRow = 0
+            }
+        }
+    }
+
+    /**
+     * Called when a player clicks on the inventory
+     *
+     * @param index the index of [options] that was clicked, null if click outside
+     * @param e the [InventoryClickEvent] that triggered this
+     */
     open fun click(
         index: Int?,
         e: InventoryClickEvent,
     ) {}
 
+    /**
+     * Calls when a player closes the inventory
+     *
+     * @param e the [InventoryCloseEvent] that triggered this
+     */
     open fun close(e: InventoryCloseEvent) {}
 }

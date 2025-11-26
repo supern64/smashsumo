@@ -18,6 +18,7 @@ object ActionItemManager {
     fun init() {
         initItem(StartGameItem())
         initItem(QuitGameItem())
+        initItem(KitSelectorMenuItem())
     }
 
     /**

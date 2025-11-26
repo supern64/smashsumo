@@ -90,6 +90,18 @@ object Config {
         get() = config.getBoolean("force-empty-inventory", true)
 
     /**
+     * Whether to enable the kit selector or not
+     */
+    val enableKitSelector: Boolean
+        get() = config.getBoolean("enable-kit-selector", true)
+
+    /**
+     * Whether to require players have a permission to use specific kits
+     */
+    val enforceKitPermissions: Boolean
+        get() = config.getBoolean("enforce-kit-permissions", false)
+
+    /**
      * Game settings
      *
      * @see me.cirnoslab.smashsumo.game.GameSettings

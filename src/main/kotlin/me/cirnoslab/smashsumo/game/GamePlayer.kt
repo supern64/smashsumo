@@ -14,6 +14,7 @@ import me.cirnoslab.smashsumo.item.ItemManager
 import me.cirnoslab.smashsumo.item.events.ItemArmorEvent
 import me.cirnoslab.smashsumo.item.events.ItemHitPlayerEvent
 import me.cirnoslab.smashsumo.kit.Kit
+import me.cirnoslab.smashsumo.menu.actionitem.KitSelectorMenuItem
 import me.cirnoslab.smashsumo.menu.actionitem.QuitGameItem
 import me.cirnoslab.smashsumo.menu.actionitem.StartGameItem
 import org.bukkit.Bukkit
@@ -53,7 +54,7 @@ class GamePlayer(
     val player: Player,
     var playerNumber: Int? = null,
     var lives: Int,
-    val kit: Kit? = null,
+    var kit: Kit? = null,
 ) {
     /**
      * The current state of this player
@@ -143,7 +144,13 @@ class GamePlayer(
         get() {
             return when (state) {
                 PlayerState.SPECTATING -> "${P}Currently spectating"
-                PlayerState.WAITING -> "${P}Waiting for players... (${S}${game.gamePlayers.count()}$P)"
+                PlayerState.WAITING -> {
+                    if (!Config.enableKitSelector) {
+                        "${P}Waiting for players... (${S}${game.gamePlayers.count()}$P)"
+                    } else {
+                        "${P}Selected Kit: ${S}${if (kit == null) "None" else kit!!.name}"
+                    }
+                }
                 PlayerState.IN_GAME -> "${color}P$playerNumber $P| ${damageColor}${"%.1f".format(damage)}%$P | Lives: ${S}$lives"
                 PlayerState.ENDING -> "${P}Waiting to teleport back..."
                 else -> "You should not see this."
@@ -244,6 +251,9 @@ class GamePlayer(
 
         if (player.hasPermission("smashsumo.gm")) {
             player.inventory.setItem(0, StartGameItem.get())
+        }
+        if (Config.enableKitSelector) {
+            player.inventory.setItem(1, KitSelectorMenuItem.get())
         }
         player.inventory.setItem(8, QuitGameItem.get())
     }

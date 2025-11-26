@@ -12,6 +12,12 @@ lobby-gamemode: ADVENTURE
 # Whether to force an empty inventory before being able to join a game (default: true)
 # The game will clear your inventories regardless if this is enabled or not, hence it is enabled by default
 force-empty-inventory: true
+# Whether to enable the kit selector
+# If this is disabled, only the default kit will be able to be used
+enable-kit-selector: true
+# Whether to require players have a permission to use specific kits
+# (e.g. a kit named tank will require the permission smashsumo.kit.tank to use)
+enforce-kit-permissions: false
 
 # Game Options
 game:
