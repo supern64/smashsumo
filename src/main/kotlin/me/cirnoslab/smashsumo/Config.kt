@@ -6,8 +6,6 @@ import dev.dejvokep.boostedyaml.settings.dumper.DumperSettings
 import dev.dejvokep.boostedyaml.settings.loader.LoaderSettings
 import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings
 import me.cirnoslab.smashsumo.game.KnockbackConfig
-import me.cirnoslab.smashsumo.kit.Kit
-import me.cirnoslab.smashsumo.kit.KitManager
 import org.bukkit.ChatColor
 import org.bukkit.GameMode
 import org.bukkit.Location
@@ -138,14 +136,10 @@ object Config {
             get() = config.getLong("game.item-despawn-time", 3000) / 50
 
         /**
-         * The kit all players will have by default, if this is null no kit will be given
-         * If the kit name in the config is invalid, this will be set to null
+         * The name of the kit all players will have by default, if this is null no kit will be given
          */
-        val defaultKit: Kit?
-            get() {
-                val kitName = config.getString("game.default-kit") ?: return null
-                return KitManager.kits[kitName]
-            }
+        val defaultKitName: String?
+            get() = config.getString("game.default-kit", null)
 
         /**
          * The [KnockbackConfig] used for the game

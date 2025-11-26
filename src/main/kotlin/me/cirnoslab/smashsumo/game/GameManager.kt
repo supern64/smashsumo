@@ -2,6 +2,7 @@ package me.cirnoslab.smashsumo.game
 
 import me.cirnoslab.smashsumo.Config
 import me.cirnoslab.smashsumo.arena.Arena
+import me.cirnoslab.smashsumo.kit.KitManager
 import org.bukkit.entity.Player
 
 /**
@@ -68,7 +69,7 @@ object GameManager {
                     Config.Game.platformDespawnTime,
                     Config.Game.itemDespawnTime,
                     Config.Game.knockback,
-                    Config.Game.defaultKit,
+                    if (Config.Game.defaultKitName != null) KitManager.kits[Config.Game.defaultKitName] else null,
                 ),
             )
         games.add(game)

@@ -283,6 +283,7 @@ class GamePlayer(
         player.allowFlight = false
         player.isFlying = false
 
+        player.clearInventory()
         kit?.apply(player)
     }
 

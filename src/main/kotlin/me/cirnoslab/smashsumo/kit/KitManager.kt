@@ -10,15 +10,28 @@ import me.cirnoslab.smashsumo.Utils
 import me.cirnoslab.smashsumo.Utils.toBase64
 import org.bukkit.Material
 import java.io.File
+import java.util.logging.Level
 
 /**
  * Kit manager singleton
  */
 object KitManager {
     /**
-     * A map of kit names and their [Kit]
+     * A map of all kit names and their [Kit]
      */
-    val kits: MutableMap<String, Kit> = mutableMapOf()
+    val kits
+        get() = pluginKits + userKits
+
+    /**
+     * A map of kits registered by other plugins
+     */
+    private val pluginKits: MutableMap<String, Kit> = mutableMapOf()
+
+    /**
+     * A map of all kits loaded by the user
+     */
+    val userKits: MutableMap<String, Kit> = mutableMapOf()
+
     private lateinit var kitF: YamlDocument
 
     /**
@@ -43,7 +56,7 @@ object KitManager {
     /**
      * Reloads the internal storage and kit list.
      *
-     * @return the number of kits loaded
+     * @return the number of kits loaded from files
      */
     fun reload(): Int {
         kitF.reload()
@@ -53,11 +66,11 @@ object KitManager {
     /**
      * Parses the kit list from internal storage.
      *
-     * @return the number of kits loaded
+     * @return the number of kits loaded from files
      */
     @Suppress("UNCHECKED_CAST")
     fun loadKitList(): Int {
-        kits.clear()
+        userKits.clear()
         kitF.getMapList("kits").forEach { map ->
             val name = map["name"] as String
             val icon = map["icon"] as String
@@ -76,9 +89,9 @@ object KitManager {
             }
 
             val kit = Kit(name, matIcon, items)
-            kits[name] = kit
+            userKits[name] = kit
         }
-        return kits.size
+        return userKits.size
     }
 
     /**
@@ -86,7 +99,7 @@ object KitManager {
      */
     fun saveKits() {
         val kitList = mutableListOf<Map<String, Any>>()
-        kits.values.forEach { kit ->
+        userKits.values.forEach { kit ->
             val map = mutableMapOf<String, Any>()
             map["name"] = kit.name
             map["icon"] = kit.icon.name
@@ -106,5 +119,20 @@ object KitManager {
         }
         kitF.set("kits", kitList)
         kitF.save()
+    }
+
+    /**
+     * Registers a kit (via plugin)
+     *
+     * @param kit the kit to register
+     * @return true if the kit was registered, false if registration failed
+     */
+    fun registerKit(kit: Kit): Boolean {
+        if (pluginKits.containsKey(kit.name)) {
+            SmashSumo.log(Level.WARNING, "Kit ${kit.name} was registered twice. The correct kit may not show up.")
+            return false
+        }
+        pluginKits[kit.name] = kit
+        return true
     }
 }

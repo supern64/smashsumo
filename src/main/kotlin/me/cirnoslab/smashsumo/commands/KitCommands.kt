@@ -45,7 +45,7 @@ object KitCommands {
                     s.sendMessage("${P}Cannot save a kit with no items.")
                     return true
                 }
-                KitManager.kits[name] = kit
+                KitManager.userKits[name] = kit
                 KitManager.saveKits()
                 s.sendMessage("${P}Saved current inventory to kit ${S}${name}$P.")
             }
@@ -72,12 +72,12 @@ object KitCommands {
                     return true
                 }
                 val name = args[2]
-                if (!KitManager.kits.containsKey(name)) {
+                if (!KitManager.userKits.containsKey(name)) {
                     s.sendMessage("${P}Kit ${S}$name ${P}does not exist.")
                     return true
                 }
-                val currKit = KitManager.kits[name]!!
-                KitManager.kits[name] = Kit(currKit.name, s.inventory.itemInHand.type, currKit.items)
+                val currKit = KitManager.userKits[name]!!
+                KitManager.userKits[name] = Kit(currKit.name, s.inventory.itemInHand.type, currKit.items)
                 KitManager.saveKits()
                 s.sendMessage("${P}Set icon for kit ${S}$name$P to item in hand.")
             }
@@ -89,11 +89,11 @@ object KitCommands {
                     s.sendMessage("${P}Please specify a kit name.")
                     return true
                 }
-                if (!KitManager.kits.containsKey(args[2])) {
-                    s.sendMessage("${P}Kit ${S}${args[2]} ${P}does not exist.")
+                if (!KitManager.userKits.containsKey(args[2])) {
+                    s.sendMessage("${P}Kit ${S}${args[2]} ${P}does not exist or is not a user-defined kit.")
                     return true
                 }
-                KitManager.kits.remove(args[2])
+                KitManager.userKits.remove(args[2])
                 KitManager.saveKits()
                 s.sendMessage("${P}Kit ${S}${args[2]} ${P}removed.")
             }
