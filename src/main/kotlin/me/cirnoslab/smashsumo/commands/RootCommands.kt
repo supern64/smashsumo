@@ -35,14 +35,23 @@ object RootCommands {
                     return true
                 }
 
+                if (GameManager.isPlayerInGame(s)) {
+                    s.sendMessage("${P}You are already in a game.")
+                    return true
+                }
+
                 if (args.size < 2) {
                     val arena =
                         ArenaManager.arenas.values
                             .filter { e -> e.state != Arena.ArenaState.PLAYING }
                             .maxByOrNull { e ->
                                 if (e.state == Arena.ArenaState.WAITING) GameManager.getGame(e)!!.gamePlayers.size else 0
-                            }!!
-                    GameManager.join(s, arena)
+                            }
+                    if (arena == null) {
+                        s.sendMessage("${S}There are no arenas available.")
+                    } else {
+                        GameManager.join(s, arena)
+                    }
                     return true
                 }
 
@@ -55,9 +64,7 @@ object RootCommands {
                 val success = GameManager.join(s, arena)
                 when (success) {
                     GameManager.GameJoinResult.SUCCESS -> {}
-                    GameManager.GameJoinResult.ALREADY_IN_GAME -> {
-                        s.sendMessage("${P}Failed to join game. You are already in a game.")
-                    }
+                    GameManager.GameJoinResult.ALREADY_IN_GAME -> {}
                     GameManager.GameJoinResult.GAME_STARTED -> {
                         s.sendMessage("${P}The game has already started. You have been joined as a spectator.")
                     }
