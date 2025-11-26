@@ -127,6 +127,9 @@ class Kit(
             require(slot in 0..39) { "invalid inventory slot" }
         }
 
+        /**
+         * Whether the slot this item belongs to is an armor slot
+         */
         val isArmor
             get() = slot >= 36
 

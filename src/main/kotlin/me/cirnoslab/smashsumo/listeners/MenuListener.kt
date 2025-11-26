@@ -7,17 +7,27 @@ import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
+import org.bukkit.event.player.PlayerDropItemEvent
 import org.bukkit.event.player.PlayerInteractEvent
 
 class MenuListener : Listener {
     /**
-     * Handles action items.
+     * Handles action items being clicked on.
      */
     @EventHandler
     fun onInteract(e: PlayerInteractEvent) {
         if (e.item == null || (e.action != Action.RIGHT_CLICK_AIR && e.action != Action.RIGHT_CLICK_BLOCK)) return
         val item = ActionItemManager.getItem(e.item) ?: return
         item.rightClick(e.player)
+        e.isCancelled = true
+    }
+
+    /**
+     * Makes action items undroppable.
+     */
+    @EventHandler
+    fun onDrop(e: PlayerDropItemEvent) {
+        if (ActionItemManager.getItem(e.itemDrop.itemStack) == null) return
         e.isCancelled = true
     }
 
@@ -40,6 +50,7 @@ class MenuListener : Listener {
     @EventHandler
     fun onInventoryClose(e: InventoryCloseEvent) {
         if (!InventoryMenuManager.menus.containsKey(e.player.uniqueId)) return
+        InventoryMenuManager.menus[e.player.uniqueId]!!.close(e)
         InventoryMenuManager.menus.remove(e.player.uniqueId)
     }
 }

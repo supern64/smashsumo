@@ -7,6 +7,9 @@ import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
+/**
+ * Action item to quit game
+ */
 class QuitGameItem : ActionItem() {
     override val data = Companion
 

@@ -8,6 +8,9 @@ import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
+/**
+ * Action item to start game, only usable with smashsumo.gm
+ */
 class StartGameItem : ActionItem() {
     override val data = Companion
 
