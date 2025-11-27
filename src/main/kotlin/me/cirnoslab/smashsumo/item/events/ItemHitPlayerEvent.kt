@@ -6,7 +6,7 @@ import org.bukkit.entity.Player
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 
 /**
- * Represents a player attacking using an item
+ * Represents a player attacking using an item (does not include projectiles)
  *
  * @property attacker the [GamePlayer] of the player who attacked
  * @property mcAttacker the [Player] of the player who attacked

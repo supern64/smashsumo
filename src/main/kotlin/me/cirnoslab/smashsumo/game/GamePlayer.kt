@@ -27,8 +27,13 @@ import org.bukkit.ChatColor.YELLOW
 import org.bukkit.GameMode
 import org.bukkit.Location
 import org.bukkit.Sound
+import org.bukkit.entity.Egg
 import org.bukkit.entity.Entity
+import org.bukkit.entity.Fireball
+import org.bukkit.entity.FishHook
 import org.bukkit.entity.Player
+import org.bukkit.entity.Projectile
+import org.bukkit.entity.Snowball
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
@@ -309,7 +314,7 @@ class GamePlayer(
         // initial damage calculation
         if (hv == null) {
             val initialDamage = Random.nextDouble(2.0, 3.0) + aMomentum * Random.nextDouble(10.0, 15.0)
-            hv = HitValue(game.settings.knockback, initialDamage)
+            hv = HitValue(game.settings.playerKnockback, initialDamage)
         }
 
         if (processItems) {
@@ -324,6 +329,48 @@ class GamePlayer(
 
         damage(hv.damage)
         knock(aGP, hv, aVertMultiplier, aMomentum)
+        return hv
+    }
+
+    /**
+     * Processes a hit by a projectile shot by another player.
+     *
+     * @param aGP the projectile owner's GamePlayer
+     * @param projectile the projectile that shot the player
+     * @param hitValue the HitValue to use for this hit
+     * @param processItems whether to take both player's items into consideration
+     * @param dEvent the EntityDamageByEntityEvent that triggered this hit
+     */
+    fun hit(
+        projectile: Projectile,
+        aGP: GamePlayer,
+        hitValue: HitValue? = null,
+        processItems: Boolean = true,
+        dEvent: EntityDamageByEntityEvent? = null,
+    ): HitValue {
+        var hv = hitValue
+
+        // initial damage calculation
+        if (hv == null) {
+            val initialDamage = Random.nextDouble(1.0, 5.0)
+            hv = HitValue(game.settings.projectileKnockback, initialDamage)
+
+            when (projectile) {
+                is Egg, is Snowball -> hv = hv.multiply(0.4, 0.9)
+                is Fireball -> hv = hv.multiply(1.2, 1.0)
+                is FishHook -> hv = hv.multiply(0.3, 0.8)
+            }
+        }
+
+        if (processItems) {
+            player.inventory.armorContents.forEach { i ->
+                val dItem = ItemManager.getItem(i)
+                dItem?.damage(ItemArmorEvent(aGP, this, hv, dEvent, mcProjectile = projectile))
+            }
+        }
+
+        damage(hv.damage)
+        knock(projectile, aGP, hv)
         return hv
     }
 
@@ -370,6 +417,37 @@ class GamePlayer(
                         (aMomentum + 1) * hitValue.xzMomentumMultiplier,
                         (aVertMultiplier + 1) * hitValue.yMomentumMultiplier,
                         (aMomentum + 1) * hitValue.xzMomentumMultiplier,
+                    ),
+                )
+
+        if (dKnockback.lengthSquared() < hitValue.minimumSize * hitValue.minimumSize) {
+            dKnockback.normalize().multiply(hitValue.minimumSize)
+        }
+        player.velocity = dKnockback
+    }
+
+    /**
+     * Applies vanilla knockback from a player's projectile.
+     *
+     * @param aGP the shooter of the projectile
+     * @param projectile the projectile that hit the player
+     * @param hitValue the HitValue to use
+     */
+    fun knock(
+        projectile: Projectile,
+        aGP: GamePlayer,
+        hitValue: HitValue,
+    ) {
+        val dKnockback =
+            projectile.velocity
+                .normalize()
+                .setY(if ((player as Entity).isOnGround) hitValue.initialY else hitValue.initialY * sign(aGP.player.location.direction.y))
+                // cumulative damage
+                .multiply(
+                    Vector(
+                        damage * hitValue.xzDamageMultiplier,
+                        damage * hitValue.yDamageMultiplier,
+                        damage * hitValue.xzDamageMultiplier,
                     ),
                 )
 

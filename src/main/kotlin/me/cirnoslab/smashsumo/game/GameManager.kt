@@ -68,7 +68,8 @@ object GameManager {
                     Config.Game.respawnTime,
                     Config.Game.platformDespawnTime,
                     Config.Game.itemDespawnTime,
-                    Config.Game.knockback,
+                    Config.Game.playerKnockback,
+                    Config.Game.projectileKnockback,
                     if (Config.Game.defaultKitName != null) KitManager.kits[Config.Game.defaultKitName] else null,
                 ),
             )

@@ -27,9 +27,13 @@ data class GameSettings(
      */
     val itemDespawnTime: Long,
     /**
-     * The [KnockbackConfig] used for the game
+     * The [KnockbackConfig] used for players
      */
-    val knockback: KnockbackConfig,
+    val playerKnockback: KnockbackConfig,
+    /**
+     * The [KnockbackConfig] used for projectiles
+     */
+    val projectileKnockback: KnockbackConfig,
     /**
      * The [Kit] that is given out to everyone when the game starts
      */

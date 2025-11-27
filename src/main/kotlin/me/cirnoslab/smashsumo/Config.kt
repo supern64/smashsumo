@@ -142,18 +142,33 @@ object Config {
             get() = config.getString("game.default-kit", null)
 
         /**
-         * The [KnockbackConfig] used for the game
+         * The [KnockbackConfig] used for players
          */
-        val knockback: KnockbackConfig
+        val playerKnockback: KnockbackConfig
             get() =
                 KnockbackConfig(
-                    config.getDouble("game.knockback.initial-y", 0.5),
-                    config.getDouble("game.knockback.minimum-size", 1.1),
-                    config.getDouble("game.knockback.xz-damage-multiplier", 0.033),
-                    config.getDouble("game.knockback.y-damage-multiplier", 0.025),
-                    config.getDouble("game.knockback.xz-momentum-multiplier", 1.0),
-                    config.getDouble("game.knockback.y-momentum-multiplier", 0.9),
-                    config.getInt("game.knockback.no-damage-ticks", 8),
+                    config.getDouble("game.knockback.player.initial-y", 0.5),
+                    config.getDouble("game.knockback.player.minimum-size", 1.1),
+                    config.getDouble("game.knockback.player.xz-damage-multiplier", 0.033),
+                    config.getDouble("game.knockback.player.y-damage-multiplier", 0.025),
+                    config.getDouble("game.knockback.player.xz-momentum-multiplier", 1.0),
+                    config.getDouble("game.knockback.player.y-momentum-multiplier", 0.9),
+                    config.getInt("game.knockback.player.no-damage-ticks", 8),
+                )
+
+        /**
+         * The [KnockbackConfig] used for projectiles
+         */
+        val projectileKnockback: KnockbackConfig
+            get() =
+                KnockbackConfig(
+                    config.getDouble("game.knockback.projectile.initial-y", 0.4),
+                    config.getDouble("game.knockback.projectile.minimum-size", 0.8),
+                    config.getDouble("game.knockback.projectile.xz-damage-multiplier", 0.02),
+                    config.getDouble("game.knockback.projectile.y-damage-multiplier", 0.015),
+                    1.0,
+                    1.0,
+                    config.getInt("game.knockback.projectile.no-damage-ticks", 4),
                 )
     }
 

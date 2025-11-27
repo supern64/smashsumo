@@ -36,20 +36,34 @@ game:
   default-kit: null
   # Knockback settings
   knockback:
-    # Base vertical knockback (default: 0.5)
-    initial-y: 0.5
-    # Minimum knockback size (default: 1.1)
-    minimum-size: 1.1
-    # Horizontal damage knockback multiplier (default: 0.033)
-    xz-damage-multiplier: 0.033
-    # Vertical damage knockback multiplier (default: 0.025)
-    y-damage-multiplier: 0.025
-    # Horizontal momentum knockback multiplier (default: 1)
-    xz-momentum-multiplier: 1
-    # Vertical momentum knockback multiplier (default: 0.9)
-    y-momentum-multiplier: 0.9
-    # Number of ticks required between hits (default: 8)
-    no-damage-ticks: 8
+    # Player knockback
+    player:
+      # Base vertical knockback (default: 0.5)
+      initial-y: 0.5
+      # Minimum knockback size (default: 1.1)
+      minimum-size: 1.1
+      # Horizontal damage knockback multiplier (default: 0.033)
+      xz-damage-multiplier: 0.033
+      # Vertical damage knockback multiplier (default: 0.025)
+      y-damage-multiplier: 0.025
+      # Horizontal momentum knockback multiplier (default: 1)
+      xz-momentum-multiplier: 1
+      # Vertical momentum knockback multiplier (default: 0.9)
+      y-momentum-multiplier: 0.9
+      # Number of ticks required before a player hit can be performed (default: 8)
+      no-damage-ticks: 8
+    # Projectile knockback
+    projectile:
+      # Base vertical knockback (default: 0.5)
+      initial-y: 0.4
+      # Minimum knockback size (default: 1.1)
+      minimum-size: 0.8
+      # Horizontal damage knockback multiplier (default: 0.02)
+      xz-damage-multiplier: 0.02
+      # Vertical damage knockback multiplier (default: 0.015)
+      y-damage-multiplier: 0.015
+      # Number of ticks required before a projectile hit can be performed (default: 4)
+      no-damage-ticks: 4
 
 
 # Styling options (legacy color - case-sensitive, see https://helpch.at/docs/1.8.8/org/bukkit/ChatColor.html)

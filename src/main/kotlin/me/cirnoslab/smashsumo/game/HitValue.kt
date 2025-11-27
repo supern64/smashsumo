@@ -26,4 +26,16 @@ data class HitValue(
         e.noDamageTicks,
         damage,
     )
+
+    fun multiply(
+        a: Double,
+        iYM: Double = 1.0,
+    ): HitValue =
+        this.copy(
+            xzDamageMultiplier = this.xzDamageMultiplier * a,
+            yDamageMultiplier = this.yDamageMultiplier * a,
+            xzMomentumMultiplier = this.xzMomentumMultiplier * a,
+            yMomentumMultiplier = this.yMomentumMultiplier * a,
+            initialY = this.initialY * iYM,
+        )
 }

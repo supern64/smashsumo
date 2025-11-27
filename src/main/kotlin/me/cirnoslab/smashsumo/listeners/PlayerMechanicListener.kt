@@ -4,9 +4,12 @@ import me.cirnoslab.smashsumo.game.Game
 import me.cirnoslab.smashsumo.game.GameManager
 import me.cirnoslab.smashsumo.game.GamePlayer
 import me.cirnoslab.smashsumo.game.GameSettings
+import me.cirnoslab.smashsumo.game.HitValue
 import org.bukkit.GameMode
 import org.bukkit.entity.Entity
+import org.bukkit.entity.EntityType
 import org.bukkit.entity.Player
+import org.bukkit.entity.Projectile
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -41,43 +44,97 @@ class PlayerMechanicListener : Listener {
     }
 
     /**
-     * Applies knockback according to damage and updates the displays.
+     * Applies knockback and damage accordingly and updates the displays.
      *
      * @see me.cirnoslab.smashsumo.game.KnockbackConfig
      */
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onPlayerHit(e: EntityDamageByEntityEvent) {
-        if (e.entity !is Player || e.damager !is Player) return
+        if (e.entity !is Player) return
         val d = e.entity as Player
-        val a = e.damager as Player
-        val aGP = GameManager.getGamePlayer(a)
-        val dGP = GameManager.getGamePlayer(d)
+        val dGP = GameManager.getGamePlayer(d) ?: return
 
-        if (aGP == null && dGP == null) return
-        if (aGP == null || dGP == null) {
+        if (dGP.respawnPoint != null || dGP.state != GamePlayer.PlayerState.IN_GAME) { // defender respawning or not in game
             e.isCancelled = true
             return
         }
 
-        val game = aGP.game
+        var fhv: HitValue?
 
-        if (game.arena.name != game.arena.name) return
-        if (aGP.state != GamePlayer.PlayerState.IN_GAME || dGP.state != GamePlayer.PlayerState.IN_GAME) {
-            e.isCancelled = true
-            return
+        when (e.damager) {
+            is Player -> {
+                val a = e.damager as Player
+                val aGP = GameManager.getGamePlayer(a)
+
+                if (aGP == null) { // attacker outside of game
+                    e.isCancelled = true
+                    return
+                }
+
+                val game = aGP.game
+
+                if (game.arena.name != dGP.game.arena.name) return // defender and attacker not in same game
+                if (aGP.state != GamePlayer.PlayerState.IN_GAME) { // attacker not in game
+                    e.isCancelled = true
+                    return
+                }
+
+                if (aGP.respawnPoint != null) { // attacker is respawning
+                    e.isCancelled = true
+                    return
+                }
+
+                if (d.noDamageTicks > 0) { // defender has NDT
+                    e.isCancelled = true
+                    return
+                }
+
+                fhv = dGP.hit(aGP, dEvent = e)
+            }
+
+            is Projectile -> {
+                val p = e.damager as Projectile
+
+                if (p.shooter !is Player) { // shot by something random (skeleton lol)
+                    e.isCancelled = true
+                    return
+                }
+
+                if (d == p.shooter) {
+                    e.isCancelled = true
+                    return
+                }
+
+                val a = p.shooter as Player
+                val aGP = GameManager.getGamePlayer(a)
+
+                if (aGP == null) { // attacker outside of game
+                    e.isCancelled = true
+                    return
+                }
+
+                val game = aGP.game
+
+                if (game.arena.name != dGP.game.arena.name) return // defender and attacker not in same game
+                if (aGP.state != GamePlayer.PlayerState.IN_GAME) { // attacker not in game
+                    e.isCancelled = true
+                    return
+                }
+
+                if (aGP.respawnPoint != null) { // attacker is respawning
+                    e.isCancelled = true
+                    return
+                }
+
+                fhv = dGP.hit(p, aGP, dEvent = e)
+
+                if (p.type != EntityType.FISHING_HOOK) p.remove()
+            }
+
+            else -> {
+                return
+            }
         }
-
-        if (aGP.respawnPoint != null || dGP.respawnPoint != null) {
-            e.isCancelled = true
-            return
-        }
-
-        if (d.noDamageTicks > 0) {
-            e.isCancelled = true
-            return
-        }
-
-        val fhv = dGP.hit(aGP, dEvent = e)
 
         e.isCancelled = true
         d.damage(0.0)
