@@ -356,7 +356,7 @@ class GamePlayer(
             hv = HitValue(game.settings.projectileKnockback, initialDamage)
 
             when (projectile) {
-                is Egg, is Snowball -> hv = hv.multiply(0.4, 0.9)
+                is Egg, is Snowball -> hv = hv.multiply(0.4, 1.0)
                 is Fireball -> hv = hv.multiply(1.2, 1.0)
                 is FishHook -> hv = hv.multiply(0.3, 0.8)
             }
