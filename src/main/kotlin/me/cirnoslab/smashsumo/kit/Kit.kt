@@ -95,7 +95,7 @@ class Kit(
         fun fromInventory(
             i: PlayerInventory,
             name: String,
-            icon: Material = Material.PAPER
+            icon: Material = Material.PAPER,
         ): Kit {
             val itemList = mutableListOf<Item>()
             i.contents.forEachIndexed { index, s ->
