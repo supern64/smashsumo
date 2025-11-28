@@ -5,6 +5,7 @@ import me.cirnoslab.smashsumo.Config.Style.S
 import me.cirnoslab.smashsumo.Utils
 import me.cirnoslab.smashsumo.kit.Kit
 import me.cirnoslab.smashsumo.kit.KitManager
+import org.bukkit.Material
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 
@@ -40,7 +41,8 @@ object KitCommands {
                     return true
                 }
                 val name = args[2]
-                val kit = Kit.fromInventory(s.inventory, name)
+                val icon = if (KitManager.userKits.containsKey(name)) KitManager.userKits[name]!!.icon else Material.PAPER
+                val kit = Kit.fromInventory(s.inventory, name, icon)
                 if (kit.items.isEmpty()) {
                     s.sendMessage("${P}Cannot save a kit with no items.")
                     return true

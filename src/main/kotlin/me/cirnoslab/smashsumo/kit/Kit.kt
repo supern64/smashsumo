@@ -89,11 +89,13 @@ class Kit(
          *
          * @param i the player inventory
          * @param name the kit's name
+         * @param icon the material to use as the icon for this kit
          * @return the kit created
          */
         fun fromInventory(
             i: PlayerInventory,
             name: String,
+            icon: Material = Material.PAPER
         ): Kit {
             val itemList = mutableListOf<Item>()
             i.contents.forEachIndexed { index, s ->
@@ -105,7 +107,7 @@ class Kit(
                 // boots - 36, leggings - 37, chestplate - 38, helmet = 39
                 itemList.add(Item(index + 36, s.clone(), true))
             }
-            return Kit(name, Material.PAPER, itemList)
+            return Kit(name, icon, itemList)
         }
     }
 
